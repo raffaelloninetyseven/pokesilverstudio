@@ -1,0 +1,226 @@
+window.Game = class Game {
+    constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.ctx = this.canvas.getContext('2d');
+        
+        this.gameStarted = false;
+        this.inputManager = new InputManager();
+        
+        this.setupCanvas();
+        this.handleResize();
+        
+        this.camera = new Camera(this.canvas.width, this.canvas.height);
+        this.player = new Player(20, 20);
+        this.map = new GameMap();
+        this.buildings = new Buildings();
+        this.ui = new UI();
+        this.spriteManager = new SpriteManager();
+        
+        this.lastTime = 0;
+        this.deltaTime = 0;
+        this.assetsLoaded = false;
+        
+        this.showMainMenu();
+        this.setupResizeListener();
+    }
+    
+    setupCanvas() {
+        this.ctx.imageSmoothingEnabled = false;
+        this.canvas.style.imageRendering = 'pixelated';
+        this.updateCanvasSize();
+    }
+    
+    updateCanvasSize() {
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        const canvasWidth = window.innerWidth * devicePixelRatio;
+        const canvasHeight = window.innerHeight * devicePixelRatio;
+        
+        this.canvas.width = canvasWidth;
+        this.canvas.height = canvasHeight;
+        
+        this.canvas.style.width = window.innerWidth + 'px';
+        this.canvas.style.height = window.innerHeight + 'px';
+        
+        this.ctx.scale(devicePixelRatio, devicePixelRatio);
+        this.ctx.imageSmoothingEnabled = false;
+        
+        CONFIG.CANVAS_WIDTH = window.innerWidth;
+        CONFIG.CANVAS_HEIGHT = window.innerHeight;
+    }
+    
+    handleResize() {
+        this.updateCanvasSize();
+        if (this.camera) {
+            this.camera.canvasWidth = CONFIG.CANVAS_WIDTH;
+            this.camera.canvasHeight = CONFIG.CANVAS_HEIGHT;
+            this.camera.maxX = CONFIG.MAP_WIDTH * CONFIG.TILE_SIZE - CONFIG.CANVAS_WIDTH;
+            this.camera.maxY = CONFIG.MAP_HEIGHT * CONFIG.TILE_SIZE - CONFIG.CANVAS_HEIGHT;
+        }
+    }
+    
+    setupResizeListener() {
+        window.addEventListener('resize', () => {
+            this.handleResize();
+        });
+    }
+    
+    showMainMenu() {
+        this.mainMenu = new MainMenu(this);
+    }
+    
+    startIntro() {
+        this.intro = new IntroManager(this);
+    }
+    
+    startMainGame() {
+        this.gameStarted = true;
+        this.loadAssets();
+    }
+    
+    async loadAssets() {
+        try {
+            await this.spriteManager.loadAllSprites();
+            this.assetsLoaded = true;
+            console.log('Assets caricati, avvio gioco...');
+            this.gameLoop();
+        } catch (error) {
+            console.warn('Errore caricamento sprite, continuo con fallback:', error);
+            this.assetsLoaded = true;
+            this.gameLoop();
+        }
+    }
+    
+    update(deltaTime) {
+        if (!this.gameStarted || !this.assetsLoaded) return;
+        
+        this.player.update(this.inputManager, this.map);
+        this.camera.follow(this.player);
+        this.buildings.update(this.player);
+        
+        if (this.inputManager.wasPressed('Space')) {
+            const interaction = this.buildings.interact();
+            if (interaction) {
+                this.ui.showDialog(interaction.message);
+            }
+        }
+        
+        if (this.inputManager.wasPressed('Escape')) {
+            this.ui.toggleMenu();
+        }
+        
+        this.ui.updateMinimap(this.player, this.camera, this.map);
+    }
+    
+    render() {
+        this.ctx.clearRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+        
+        if (!this.gameStarted) {
+            this.ctx.fillStyle = '#000';
+            this.ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+            
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = `${Math.min(CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT) * 0.04}px "Press Start 2P"`;
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('SILVERSTUDIO', CONFIG.CANVAS_WIDTH/2, CONFIG.CANVAS_HEIGHT/2 - 20);
+            
+            this.ctx.font = `${Math.min(CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT) * 0.02}px "Press Start 2P"`;
+            this.ctx.fillText('PORTFOLIO GAME', CONFIG.CANVAS_WIDTH/2, CONFIG.CANVAS_HEIGHT/2 + 20);
+            return;
+        }
+        
+        if (!this.assetsLoaded) {
+            this.ctx.fillStyle = '#1e3c72';
+            this.ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+            
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = `${Math.min(CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT) * 0.03}px "Press Start 2P"`;
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('CARICAMENTO...', CONFIG.CANVAS_WIDTH/2, CONFIG.CANVAS_HEIGHT/2);
+            return;
+        }
+        
+        this.ctx.fillStyle = '#87CEEB';
+        this.ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+        
+        this.map.render(this.ctx, this.camera, this.spriteManager);
+        this.buildings.render(this.ctx, this.camera, this.spriteManager);
+        this.player.render(this.ctx, this.camera, this.spriteManager);
+        
+        this.renderUI();
+    }
+    
+    renderUI() {
+        const uiScale = Math.min(CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT) * 0.001;
+        const baseFontSize = Math.max(8, 12 * uiScale);
+        
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        const controlsWidth = Math.min(250, CONFIG.CANVAS_WIDTH * 0.3);
+        const controlsHeight = Math.min(60, CONFIG.CANVAS_HEIGHT * 0.1);
+        this.ctx.fillRect(10, CONFIG.CANVAS_HEIGHT - controlsHeight - 10, controlsWidth, controlsHeight);
+        
+        this.ctx.fillStyle = '#fff';
+        this.ctx.font = `${baseFontSize}px "Press Start 2P"`;
+        this.ctx.textAlign = 'left';
+        this.ctx.fillText('WASD - Movimento', 15, CONFIG.CANVAS_HEIGHT - controlsHeight + 15);
+        this.ctx.fillText('SPACE - Interagisci', 15, CONFIG.CANVAS_HEIGHT - controlsHeight + 30);
+        this.ctx.fillText('ESC - Menu', 15, CONFIG.CANVAS_HEIGHT - controlsHeight + 45);
+        
+        if (this.gameStarted && this.assetsLoaded) {
+            const genderText = CONFIG.PLAYER_GENDER === 'female' ? 'Benvenuta' : 'Benvenuto';
+            const welcomeWidth = Math.min(220, CONFIG.CANVAS_WIDTH * 0.25);
+            const welcomeHeight = 40;
+            
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.fillRect(CONFIG.CANVAS_WIDTH - welcomeWidth - 10, 10, welcomeWidth, welcomeHeight);
+            
+            this.ctx.fillStyle = '#4ecdc4';
+            this.ctx.font = `${baseFontSize}px "Press Start 2P"`;
+            this.ctx.textAlign = 'left';
+            this.ctx.fillText(`${genderText} nel mondo`, CONFIG.CANVAS_WIDTH - welcomeWidth - 5, 25);
+            this.ctx.fillText('di SilverStudio!', CONFIG.CANVAS_WIDTH - welcomeWidth - 5, 40);
+        }
+        
+        if (window.debugMode) {
+            const debugWidth = 180;
+            const debugHeight = 100;
+            this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            this.ctx.fillRect(CONFIG.CANVAS_WIDTH - debugWidth - 10, 60, debugWidth, debugHeight);
+            
+            this.ctx.fillStyle = '#00ff00';
+            this.ctx.font = `${baseFontSize}px "Press Start 2P"`;
+            this.ctx.textAlign = 'left';
+            const playerPos = this.player.getTilePosition();
+            this.ctx.fillText(`X: ${playerPos.x}`, CONFIG.CANVAS_WIDTH - debugWidth - 5, 80);
+            this.ctx.fillText(`Y: ${playerPos.y}`, CONFIG.CANVAS_WIDTH - debugWidth - 5, 95);
+            this.ctx.fillText(`FPS: ${Math.round(1000/this.deltaTime)}`, CONFIG.CANVAS_WIDTH - debugWidth - 5, 110);
+            this.ctx.fillText(`Res: ${CONFIG.CANVAS_WIDTH}x${CONFIG.CANVAS_HEIGHT}`, CONFIG.CANVAS_WIDTH - debugWidth - 5, 125);
+            this.ctx.fillText(`Gender: ${CONFIG.PLAYER_GENDER}`, CONFIG.CANVAS_WIDTH - debugWidth - 5, 140);
+        }
+    }
+    
+    gameLoop(currentTime = 0) {
+        this.deltaTime = currentTime - this.lastTime;
+        this.lastTime = currentTime;
+        
+        this.update(this.deltaTime);
+        this.render();
+        
+        requestAnimationFrame((time) => this.gameLoop(time));
+    }
+    
+    enableDebugMode() {
+        window.debugMode = true;
+        console.log('Debug mode attivato');
+    }
+    
+    disableDebugMode() {
+        window.debugMode = false;
+        console.log('Debug mode disattivato');
+    }
+    
+    teleportPlayer(x, y) {
+        this.player.x = x * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+        this.player.y = y * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+        console.log(`Player teletrasportato a: ${x}, ${y}`);
+    }
+};

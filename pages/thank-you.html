@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grazie! - SilverStudio</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* THANK YOU PAGE SPECIFIC STYLES */
+        .thank-you-hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .thank-you-content {
+            max-width: 800px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .success-icon {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 3rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+            box-shadow: 
+                0 20px 60px rgba(16, 185, 129, 0.4),
+                0 0 80px rgba(16, 185, 129, 0.2);
+            animation: success-pulse 2s infinite ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .success-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: success-shimmer 3s infinite;
+        }
+
+        @keyframes success-pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 
+                    0 20px 60px rgba(16, 185, 129, 0.4),
+                    0 0 80px rgba(16, 185, 129, 0.2);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 
+                    0 25px 80px rgba(16, 185, 129, 0.6),
+                    0 0 120px rgba(16, 185, 129, 0.4);
+            }
+        }
+
+        @keyframes success-shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .thank-you-title {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #10b981, #059669, #047857);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradient-shift 3s ease-in-out infinite;
+            text-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .thank-you-message {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            line-height: 1.8;
+            opacity: 0;
+            animation: fade-in-up 1s ease forwards 0.5s;
+        }
+
+        .thank-you-details {
+            background: rgba(16, 185, 129, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fade-in-up 1s ease forwards 1s;
+        }
+
+        .thank-you-details h3 {
+            color: #10b981;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .thank-you-details p {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .thank-you-actions {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fade-in-up 1s ease forwards 1.5s;
+        }
+
+        .action-btn {
+            padding: 1.2rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 1.1rem;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .action-btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-home:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(99, 102, 241, 0.6);
+        }
+
+        .btn-portfolio {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            backdrop-filter: blur(20px);
+        }
+
+        .btn-portfolio:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 1);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        /* FLOATING CELEBRATION PARTICLES */
+        .celebration-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .celebration-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: celebration-float 4s infinite ease-out;
+        }
+
+        .confetti {
+            width: 6px;
+            height: 12px;
+            border-radius: 2px;
+            animation: confetti-fall 3s infinite linear;
+        }
+
+        @keyframes celebration-float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .thank-you-title {
+                font-size: 2.5rem;
+            }
+            
+            .success-icon {
+                width: 120px;
+                height: 120px;
+                font-size: 3rem;
+            }
+            
+            .thank-you-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+
+        /* COUNTDOWN TIMER */
+        .countdown-container {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            opacity: 0;
+            animation: fade-in-up 1s ease forwards 2s;
+        }
+
+        .countdown-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .countdown-timer {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="background-animation">
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+        <div class="floating-shape shape-4"></div>
+        <div class="floating-shape shape-5"></div>
+    </div>
+
+    <div class="celebration-container" id="celebrationContainer"></div>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-text">Silver</span><span class="logo-accent">Studio</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#servizi">Servizi</a></li>
+                <li><a href="index.html#portfolio">Portfolio</a></li>
+                <li><a href="index.html#contatti">Contatti</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="thank-you-hero">
+        <div class="thank-you-content">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            
+            <h1 class="thank-you-title">Messaggio Inviato!</h1>
+            
+            <p class="thank-you-message">
+                Grazie per averci contattato! 🎉<br>
+                Il tuo messaggio è stato ricevuto con successo e ti risponderemo il prima possibile.
+            </p>
+
+            <div class="thank-you-details">
+                <h3><i class="fas fa-info-circle"></i> Cosa succede ora?</h3>
+                <p><i class="fas fa-envelope"></i> Riceverai una conferma via email entro 5 minuti</p>
+                <p><i class="fas fa-clock"></i> Ti risponderemo entro 24 ore lavorative</p>
+                <p><i class="fas fa-phone"></i> Per urgenze, chiamaci al +39 123 456 7890</p>
+            </div>
+
+            <div class="thank-you-actions">
+                <a href="index.html" class="action-btn btn-home">
+                    <i class="fas fa-home"></i>
+                    <span>Torna alla Home</span>
+                </a>
+                <a href="index.html#portfolio" class="action-btn btn-portfolio">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Vedi Portfolio</span>
+                </a>
+            </div>
+
+            <div class="countdown-container">
+                <div class="countdown-text">Reindirizzamento automatico alla home tra:</div>
+                <div class="countdown-timer" id="countdown">30</div>
+            </div>
+        </div>
+    </section>
+
+    <script src="assets/js/script.js"></script>
+    <script>
+        // CELEBRATION PARTICLES
+        function createCelebrationParticles() {
+            const container = document.getElementById('celebrationContainer');
+            const colors = ['#10b981', '#059669', '#6366f1', '#8b5cf6', '#f59e0b', '#ef4444'];
+            
+            // Create floating particles
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'celebration-particle';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    particle.style.animationDelay = Math.random() * 2 + 's';
+                    
+                    container.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            container.removeChild(particle);
+                        }
+                    }, 6000);
+                }, i * 100);
+            }
+            
+            // Create confetti
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'celebration-particle confetti';
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    confetti.style.animationDelay = Math.random() * 1 + 's';
+                    
+                    container.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        if (confetti.parentNode) {
+                            container.removeChild(confetti);
+                        }
+                    }, 4000);
+                }, i * 150);
+            }
+        }
+
+        // AUTO REDIRECT COUNTDOWN
+        function startCountdown() {
+            let timeLeft = 30;
+            const countdownElement = document.getElementById('countdown');
+            
+            const timer = setInterval(() => {
+                timeLeft--;
+                countdownElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
+            
+            // Stop countdown if user interacts with page
+            document.addEventListener('click', () => {
+                clearInterval(timer);
+                countdownElement.textContent = 'Annullato';
+            });
+        }
+
+        // SOUND EFFECT
+        function playSuccessSound() {
+            if ('AudioContext' in window || 'webkitAudioContext' in window) {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Success melody
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                
+                notes.forEach((frequency, index) => {
+                    setTimeout(() => {
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                        oscillator.type = 'sine';
+                        
+                        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                        
+                        oscillator.start(audioContext.currentTime);
+                        oscillator.stop(audioContext.currentTime + 0.3);
+                    }, index * 150);
+                });
+            }
+        }
+
+        // INITIALIZE ON LOAD
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start celebrations
+            createCelebrationParticles();
+            
+            // Play success sound
+            setTimeout(playSuccessSound, 500);
+            
+            // Start countdown
+            startCountdown();
+            
+            // Console message
+            console.log('🎉 Thank you page loaded successfully!');
+            console.log('📧 Form submission confirmed');
+            
+            // Optional: Send analytics event
+            // gtag('event', 'form_submit', { 'event_category': 'contact' });
+        });
+
+        // CONTINUOUS CELEBRATION (every 10 seconds)
+        setInterval(() => {
+            if (Math.random() > 0.7) { // 30% chance every 10 seconds
+                createCelebrationParticles();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>

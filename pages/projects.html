@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Miei Progetti</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Press Start 2P', monospace;
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+        
+        .header p {
+            font-size: 10px;
+            color: #ccc;
+        }
+        
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .project-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #fff;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .project-title {
+            font-size: 14px;
+            color: #4ecdc4;
+            margin-bottom: 15px;
+        }
+        
+        .project-description {
+            font-size: 8px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .tech-tag {
+            background: #ff6b6b;
+            color: #fff;
+            padding: 2px 6px;
+            font-size: 6px;
+        }
+        
+        .project-links {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .project-link {
+            background: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+            padding: 8px 12px;
+            font-size: 8px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .project-link:hover {
+            background: #fff;
+            color: #1e3c72;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: #ff6b6b;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            font-family: inherit;
+            font-size: 8px;
+            cursor: pointer;
+        }
+        
+        .back-button:hover {
+            background: #e55555;
+        }
+        
+        @media (max-width: 768px) {
+            .projects-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.close()">← TORNA</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>CENTRO PROGETTI</h1>
+            <p>I miei lavori più importanti</p>
+        </div>
+        
+        <div class="projects-grid">
+            <div class="project-card">
+                <h3 class="project-title">Portfolio Game</h3>
+                <p class="project-description">
+                    Un portfolio interattivo in stile retro-gaming. 
+                    Naviga come in un RPG per scoprire i miei progetti e competenze.
+                </p>
+                <div class="project-tech">
+                    <span class="tech-tag">JavaScript</span>
+                    <span class="tech-tag">Canvas</span>
+                    <span class="tech-tag">CSS3</span>
+                    <span class="tech-tag">Game Dev</span>
+                </div>
+                <div class="project-links">
+                    <a href="#" class="project-link">DEMO</a>
+                    <a href="#" class="project-link">CODICE</a>
+                </div>
+            </div>
+            
+            <div class="project-card">
+                <h3 class="project-title">E-Commerce App</h3>
+                <p class="project-description">
+                    Applicazione completa di e-commerce con gestione prodotti, 
+                    carrello, pagamenti e dashboard amministratore.
+                </p>
+                <div class="project-tech">
+                    <span class="tech-tag">React</span>
+                    <span class="tech-tag">Node.js</span>
+                    <span class="tech-tag">MongoDB</span>
+                    <span class="tech-tag">Stripe</span>
+                </div>
+                <div class="project-links">
+                    <a href="#" class="project-link">DEMO</a>
+                    <a href="#" class="project-link">CODICE</a>
+                </div>
+            </div>
+            
+            <div class="project-card">
+                <h3 class="project-title">Task Manager</h3>
+                <p class="project-description">
+                    Sistema di gestione attività con drag & drop, 
+                    collaborazione in tempo reale e statistiche avanzate.
+                </p>
+                <div class="project-tech">
+                    <span class="tech-tag">Vue.js</span>
+                    <span class="tech-tag">Socket.io</span>
+                    <span class="tech-tag">Express</span>
+                    <span class="tech-tag">PostgreSQL</span>
+                </div>
+                <div class="project-links">
+                    <a href="#" class="project-link">DEMO</a>
+                    <a href="#" class="project-link">CODICE</a>
+                </div>
+            </div>
+            
+            <div class="project-card">
+                <h3 class="project-title">Weather App</h3>
+                <p class="project-description">
+                    App meteo con previsioni dettagliate, mappe interattive 
+                    e notifiche push personalizzate.
+                </p>
+                <div class="project-tech">
+                    <span class="tech-tag">React Native</span>
+                    <span class="tech-tag">API REST</span>
+                    <span class="tech-tag">Maps</span>
+                    <span class="tech-tag">Push Notifications</span>
+                </div>
+                <div class="project-links">
+                    <a href="#" class="project-link">DEMO</a>
+                    <a href="#" class="project-link">CODICE</a>
+                </div>
+            </div>
+            
+            <div class="project-card">
+                <h3 class="project-title">Chat Bot AI</h3>
+                <p class="project-description">
+                    Chatbot intelligente con elaborazione del linguaggio naturale 
+                    e integrazione multi-piattaforma.
+                </p>
+                <div class="project-tech">
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">TensorFlow</span>
+                    <span class="tech-tag">NLP</span>
+                    <span class="tech-tag">Docker</span>
+                </div>
+                <div class="project-links">
+                    <a href="#" class="project-link">DEMO</a>
+                    <a href="#" class="project-link">CODICE</a>
+                </div>
+            </div>
+            
+            <div class="project-card">
+                <h3 class="project-title">Blockchain Wallet</h3>
+                <p class="project-description">
+                    Wallet per criptovalute con interfaccia intuitiva, 
+                    scambio integrato e sistema di sicurezza avanzato.
+                </p>
+                <div class="project-tech">
+                    <span class="tech-tag">Web3</span>
+                    <span class="tech-tag">Ethereum</span>
+                    <span class="tech-tag">React</span>
+                    <span class="tech-tag">Smart Contracts</span>
+                </div>
+                <div class="project-links">
+                    <a href="#" class="project-link">DEMO</a>
+                    <a href="#" class="project-link">CODICE</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

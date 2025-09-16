@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilverStudio</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/ui.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <div id="ui">
+            <div id="dialogBox" class="hidden">
+                <div class="dialog-content"></div>
+                <div class="dialog-arrow">▼</div>
+            </div>
+            
+            <div id="menu" class="hidden">
+                <div class="menu-title">MENU</div>
+                <div class="menu-item" data-page="projects">Progetti</div>
+                <div class="menu-item" data-page="skills">Skills</div>
+                <div class="menu-item" data-page="contact">Contatti</div>
+                <div class="menu-item" data-page="about">About</div>
+            </div>
+            
+            <div id="minimap">
+                <canvas id="minimapCanvas" width="120" height="90"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/spriteManager.js"></script>
+    <script src="assets/js/input.js"></script>
+    <script src="assets/js/camera.js"></script>
+    <script src="assets/js/player.js"></script>
+    <script src="assets/js/map.js"></script>
+    <script src="assets/js/buildings.js"></script>
+    <script src="assets/js/ui.js"></script>
+    <script src="assets/js/mainMenu.js"></script>
+    <script src="assets/js/intro.js"></script>
+    <script src="assets/js/game.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
