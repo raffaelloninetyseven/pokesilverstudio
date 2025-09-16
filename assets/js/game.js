@@ -74,6 +74,13 @@ window.Game = class Game {
     
     startMainGame() {
         this.gameStarted = true;
+        
+        // Mostra minimap quando inizia il gioco principale
+        const minimap = document.getElementById('minimap');
+        if (minimap) {
+            minimap.style.display = 'block';
+        }
+        
         this.loadAssets();
     }
     

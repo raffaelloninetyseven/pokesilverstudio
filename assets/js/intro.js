@@ -21,7 +21,7 @@ window.IntroManager = class IntroManager {
         this.profLoaded = false;
         this.profAnimFrame = 0;
         this.profAnimTimer = 0;
-        this.profFrameCount = 5;
+        this.profFrameCount = 4;
         this.profAnimSpeed = 0.1;
         
         // Stars background (come mainMenu)
@@ -33,6 +33,9 @@ window.IntroManager = class IntroManager {
         this.girlImg = null;
         this.boyLoaded = false;
         this.girlLoaded = false;
+        
+        // Nascondi minimap durante l'intro
+        this.hideMinimap();
         
         this.loadProfSpritesheet();
         
@@ -58,6 +61,20 @@ window.IntroManager = class IntroManager {
         this.currentDialogue = this.dialogues.welcome;
         this.setupUI();
         this.introLoop();
+    }
+    
+    hideMinimap() {
+        const minimap = document.getElementById('minimap');
+        if (minimap) {
+            minimap.style.display = 'none';
+        }
+    }
+    
+    showMinimap() {
+        const minimap = document.getElementById('minimap');
+        if (minimap) {
+            minimap.style.display = 'block';
+        }
     }
     
     generateStars() {
@@ -93,14 +110,14 @@ window.IntroManager = class IntroManager {
         this.overlay.innerHTML = `
             <div class="intro-container">
                 <div class="prof-section">
-                    <canvas id="prof-canvas" width="300" height="400"></canvas>
+                    <canvas id="prof-canvas" width="512" height="768"></canvas>
                 </div>
                 
                 <div class="dialogue-section">
                     <div class="dialogue-box">
                         <div class="dialogue-text" id="dialogue-text"></div>
                         <div class="dialogue-controls">
-                            <span class="continue-hint" id="continue-hint">SPAZIO - Continua / INVIO - Salta testo</span>
+                            <span class="continue-hint" id="continue-hint">SPAZIO - Continua</span>
                         </div>
                     </div>
                 </div>
@@ -138,6 +155,34 @@ window.IntroManager = class IntroManager {
                 overflow: hidden;
             }
             
+            /* Stelle animate dietro tutto */
+            #intro-overlay::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(2px 2px at 20% 30%, #fff, transparent),
+                            radial-gradient(2px 2px at 40% 70%, #fff, transparent),
+                            radial-gradient(1px 1px at 90% 40%, #fff, transparent),
+                            radial-gradient(1px 1px at 50% 50%, #fff, transparent),
+                            radial-gradient(2px 2px at 80% 10%, #fff, transparent),
+                            radial-gradient(1px 1px at 30% 90%, #fff, transparent),
+                            radial-gradient(1px 1px at 70% 20%, #fff, transparent),
+                            radial-gradient(2px 2px at 10% 60%, #fff, transparent);
+                background-size: 200px 200px, 300px 300px, 150px 150px, 250px 250px,
+                                180px 180px, 220px 220px, 280px 280px, 160px 160px;
+                animation: twinkle 20s linear infinite;
+                opacity: 0.6;
+                z-index: -1;
+            }
+            
+            @keyframes twinkle {
+                0% { transform: translateY(0) rotate(0deg); }
+                100% { transform: translateY(-100vh) rotate(360deg); }
+            }
+            
             .intro-container {
                 width: 90vw;
                 height: 90vh;
@@ -159,14 +204,17 @@ window.IntroManager = class IntroManager {
                 background: linear-gradient(135deg, rgba(30, 60, 114, 0.2), rgba(42, 82, 152, 0.2));
                 border-right: 3px solid #4ecdc4;
                 position: relative;
+                padding: 20px;
             }
             
             #prof-canvas {
                 image-rendering: pixelated;
-                max-width: 80%;
-                max-height: 80%;
+                width: 100%;
+                height: 100%;
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
                 filter: drop-shadow(0 0 30px rgba(78, 205, 196, 0.4));
-                transform: scale(1.2);
             }
             
             .dialogue-section {
@@ -240,10 +288,11 @@ window.IntroManager = class IntroManager {
             .gender-option {
                 background: rgba(30, 60, 114, 0.8);
                 border: 3px solid #4ecdc4;
-                padding: clamp(15px, 3vw, 30px);
+                padding: clamp(15px, 3vw, 25px);
                 cursor: pointer;
                 transition: all 0.3s ease;
-                min-width: clamp(100px, 15vw, 180px);
+                min-width: clamp(80px, 12vw, 140px);
+                max-width: clamp(120px, 15vw, 180px);
                 border-radius: 8px;
             }
             
@@ -260,9 +309,9 @@ window.IntroManager = class IntroManager {
             }
             
             .character-sprite {
-                font-size: clamp(24px, 5vw, 48px);
-                margin-bottom: clamp(10px, 2vw, 20px);
-                min-height: clamp(40px, 8vw, 80px);
+                font-size: clamp(20px, 4vw, 32px);
+                margin-bottom: clamp(8px, 1.5vw, 15px);
+                min-height: clamp(50px, 8vw, 70px);
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -272,8 +321,9 @@ window.IntroManager = class IntroManager {
                 image-rendering: pixelated;
                 border: 2px solid transparent;
                 transition: all 0.3s ease;
-                border-radius: 8px;
-                transform: scale(1.8);
+                border-radius: 6px;
+                width: clamp(40px, 6vw, 64px);
+                height: clamp(40px, 6vw, 64px);
             }
             
             .gender-option.selected .character-sprite canvas {
@@ -304,6 +354,11 @@ window.IntroManager = class IntroManager {
                     height: 45%;
                     border-right: none;
                     border-bottom: 3px solid #4ecdc4;
+                    padding: 10px;
+                }
+                
+                #prof-canvas {
+                    max-height: 90%;
                 }
                 
                 .dialogue-section {
@@ -317,18 +372,24 @@ window.IntroManager = class IntroManager {
                 }
                 
                 .gender-option {
-                    min-width: 120px;
-                    padding: 15px;
+                    min-width: 100px;
+                    max-width: 130px;
+                    padding: 12px;
                 }
                 
                 .character-sprite canvas {
-                    transform: scale(1.4);
+                    width: 48px;
+                    height: 48px;
                 }
             }
             
             @media (max-width: 480px) {
+                .prof-section {
+                    padding: 5px;
+                }
+                
                 #prof-canvas {
-                    transform: scale(1);
+                    max-height: 85%;
                 }
                 
                 .dialogue-section {
@@ -361,17 +422,31 @@ window.IntroManager = class IntroManager {
     loadBoySprite() {
         const boyImg = new Image();
         boyImg.onload = () => {
+            // Canvas più piccolo per i personaggi
             const boyCanvas = document.createElement('canvas');
-            boyCanvas.width = 32;
-            boyCanvas.height = 32;
+            boyCanvas.width = 64;
+            boyCanvas.height = 64;
             const boyCtx = boyCanvas.getContext('2d');
             boyCtx.imageSmoothingEnabled = false;
             
             const frameWidth = boyImg.width / 4;
-            boyCtx.drawImage(boyImg, 0, 0, frameWidth, boyImg.height, 0, 0, 32, 32);
+            const frameHeight = boyImg.height;
             
-            document.getElementById('boy-sprite').innerHTML = '';
-            document.getElementById('boy-sprite').appendChild(boyCanvas);
+            // Disegna il primo frame (idle)
+            boyCtx.drawImage(
+                boyImg, 
+                0, 0, frameWidth, frameHeight,  // Frame 0 dal spritesheet
+                8, 8, 48, 48                    // Centra nel canvas più piccolo
+            );
+            
+            const boySprite = document.getElementById('boy-sprite');
+            if (boySprite) {
+                boySprite.innerHTML = '';
+                boySprite.appendChild(boyCanvas);
+                boyCanvas.dataset.spritesheet = boyImg.src;
+                boyCanvas.dataset.frameWidth = frameWidth;
+                boyCanvas.dataset.frameHeight = frameHeight;
+            }
         };
         boyImg.onerror = () => {
             console.log('Boy sprite non trovato, uso emoji fallback');
@@ -382,17 +457,31 @@ window.IntroManager = class IntroManager {
     loadGirlSprite() {
         const girlImg = new Image();
         girlImg.onload = () => {
+            // Canvas più piccolo per i personaggi
             const girlCanvas = document.createElement('canvas');
-            girlCanvas.width = 32;
-            girlCanvas.height = 32;
+            girlCanvas.width = 64;
+            girlCanvas.height = 64;
             const girlCtx = girlCanvas.getContext('2d');
             girlCtx.imageSmoothingEnabled = false;
             
             const frameWidth = girlImg.width / 4;
-            girlCtx.drawImage(girlImg, 0, 0, frameWidth, girlImg.height, 0, 0, 32, 32);
+            const frameHeight = girlImg.height;
             
-            document.getElementById('girl-sprite').innerHTML = '';
-            document.getElementById('girl-sprite').appendChild(girlCanvas);
+            // Disegna il primo frame (idle)
+            girlCtx.drawImage(
+                girlImg, 
+                0, 0, frameWidth, frameHeight,  // Frame 0 dal spritesheet
+                8, 8, 48, 48                    // Centra nel canvas più piccolo
+            );
+            
+            const girlSprite = document.getElementById('girl-sprite');
+            if (girlSprite) {
+                girlSprite.innerHTML = '';
+                girlSprite.appendChild(girlCanvas);
+                girlCanvas.dataset.spritesheet = girlImg.src;
+                girlCanvas.dataset.frameWidth = frameWidth;
+                girlCanvas.dataset.frameHeight = frameHeight;
+            }
         };
         girlImg.onerror = () => {
             console.log('Girl sprite non trovato, uso emoji fallback');
@@ -401,94 +490,158 @@ window.IntroManager = class IntroManager {
     }
     
     setupEventListeners() {
-        document.addEventListener('keydown', (e) => {
+        // Event listener semplificato solo per tastiera
+        this.keydownHandler = (e) => {
             if (!this.isActive) return;
+            
+            console.log('Key pressed:', e.code, 'Current step:', this.currentStep, 'Is typing:', this.isTyping, 'Text index:', this.textIndex);
             
             if (e.code === 'Space') {
                 e.preventDefault();
                 this.handleSpacePress();
-            } else if (e.code === 'Enter') {
-                e.preventDefault();
-                this.skipTyping = true;
             }
-        });
+        };
         
-        document.querySelectorAll('.gender-option').forEach(option => {
-            option.addEventListener('click', () => {
-                this.selectGender(option.dataset.gender);
+        document.addEventListener('keydown', this.keydownHandler);
+        
+        // Click listeners solo per selezione genere
+        this.setupGenderClickListeners();
+    }
+    
+    setupGenderClickListeners() {
+        setTimeout(() => {
+            const genderOptions = document.querySelectorAll('.gender-option');
+            console.log('Setting up gender listeners for', genderOptions.length, 'options');
+            
+            genderOptions.forEach(option => {
+                // Solo click handler, senza animazioni hover per ora
+                option.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Gender clicked:', option.dataset.gender, 'Current step:', this.currentStep);
+                    if (this.currentStep === 'gender') {
+                        this.selectGender(option.dataset.gender);
+                    }
+                });
             });
-        });
+        }, 200);
     }
     
     handleSpacePress() {
-        if (this.currentStep === 'gender') return;
+        console.log('Space pressed - Current step:', this.currentStep, 'Text index:', this.textIndex, 'Is typing:', this.isTyping);
         
+        // Se stiamo digitando, salta il typing
         if (this.isTyping) {
             this.skipTyping = true;
             return;
         }
         
+        // Se siamo nella fase gender e non abbiamo selezionato, non fare nulla
+        if (this.currentStep === 'gender' && !this.selectedGender) {
+            console.log('Waiting for gender selection...');
+            return;
+        }
+        
+        // Se ci sono ancora dialoghi da mostrare
         if (this.textIndex < this.currentDialogue.length - 1) {
             this.textIndex++;
+            console.log('Next dialogue:', this.textIndex, '/', this.currentDialogue.length - 1);
             this.startTypewriter();
         } else {
+            // Passa al prossimo step
+            console.log('Going to next step from:', this.currentStep);
             this.nextStep();
         }
     }
     
     selectGender(gender) {
+        console.log('Selecting gender:', gender);
         this.selectedGender = gender;
         
+        // Aggiorna visual selection
         document.querySelectorAll('.gender-option').forEach(opt => {
             opt.classList.remove('selected');
         });
-        document.querySelector(`[data-gender="${gender}"]`).classList.add('selected');
+        const selectedElement = document.querySelector(`[data-gender="${gender}"]`);
+        if (selectedElement) {
+            selectedElement.classList.add('selected');
+        }
         
+        // Aggiorna config
         CONFIG.PLAYER_GENDER = gender;
         
+        // Procedi automaticamente dopo un piccolo delay
         setTimeout(() => {
             this.nextStep();
-        }, 500);
+        }, 800);
     }
     
     nextStep() {
+        console.log('Next step called from:', this.currentStep);
+        
         switch(this.currentStep) {
             case 'welcome':
                 this.currentStep = 'gender';
                 this.currentDialogue = this.dialogues.gender;
                 this.textIndex = 0;
+                console.log('Switching to gender selection');
                 this.showGenderSelection();
                 this.startTypewriter();
                 break;
                 
             case 'gender':
-                if (!this.selectedGender) return;
+                if (!this.selectedGender) {
+                    console.log('No gender selected, waiting...');
+                    return;
+                }
                 this.currentStep = 'confirmation';
                 this.currentDialogue = this.dialogues.confirmation;
                 this.textIndex = 0;
+                console.log('Switching to confirmation');
                 this.hideGenderSelection();
                 this.startTypewriter();
                 break;
                 
             case 'confirmation':
+                console.log('Ending intro');
                 this.endIntro();
                 break;
+                
+            default:
+                console.log('Unknown step:', this.currentStep);
         }
     }
     
     showGenderSelection() {
-        document.getElementById('gender-selection').style.display = 'block';
+        const genderSelection = document.getElementById('gender-selection');
+        if (genderSelection) {
+            genderSelection.style.display = 'block';
+            console.log('Gender selection shown');
+            // Setup click listeners quando mostri la selezione
+            this.setupGenderClickListeners();
+        }
     }
     
     hideGenderSelection() {
-        document.getElementById('gender-selection').style.display = 'none';
+        const genderSelection = document.getElementById('gender-selection');
+        if (genderSelection) {
+            genderSelection.style.display = 'none';
+            console.log('Gender selection hidden');
+        }
     }
     
     startTypewriter() {
+        const dialogueElement = document.getElementById('dialogue-text');
+        if (!dialogueElement) {
+            console.error('Dialogue element not found!');
+            return;
+        }
+        
         this.currentText = '';
         this.lastTextUpdate = Date.now();
         this.isTyping = true;
         this.skipTyping = false;
+        
+        console.log('Starting typewriter for:', this.currentDialogue[this.textIndex]);
         this.typewriterEffect();
     }
     
@@ -496,12 +649,16 @@ window.IntroManager = class IntroManager {
         if (!this.isActive) return;
         
         const targetText = this.currentDialogue[this.textIndex];
+        const dialogueElement = document.getElementById('dialogue-text');
+        
+        if (!dialogueElement) return;
         
         if (this.skipTyping) {
             this.currentText = targetText;
             this.isTyping = false;
             this.skipTyping = false;
-            document.getElementById('dialogue-text').textContent = this.currentText;
+            dialogueElement.textContent = this.currentText;
+            console.log('Text skipped');
             return;
         }
         
@@ -509,10 +666,11 @@ window.IntroManager = class IntroManager {
         if (now - this.lastTextUpdate >= this.textSpeed) {
             if (this.currentText.length < targetText.length) {
                 this.currentText += targetText[this.currentText.length];
-                document.getElementById('dialogue-text').textContent = this.currentText;
+                dialogueElement.textContent = this.currentText;
                 this.lastTextUpdate = now;
             } else {
                 this.isTyping = false;
+                console.log('Typing completed');
             }
         }
         
@@ -572,28 +730,41 @@ window.IntroManager = class IntroManager {
     }
     
     renderProfSprite() {
+        if (!this.profCanvas || !this.profCtx) return;
+        
         if (!this.profLoaded || !this.profSpritesheet.complete) {
             this.profCtx.clearRect(0, 0, this.profCanvas.width, this.profCanvas.height);
             
+            // Fallback più dettagliato
+            this.profCtx.fillStyle = '#1a1a1a';
+            this.profCtx.fillRect(0, 0, this.profCanvas.width, this.profCanvas.height);
+            
             this.profCtx.fillStyle = '#4ecdc4';
-            this.profCtx.font = '32px "Press Start 2P"';
+            this.profCtx.font = `${this.profCanvas.width * 0.08}px "Press Start 2P"`;
             this.profCtx.textAlign = 'center';
-            this.profCtx.fillText('PROF', this.profCanvas.width/2, this.profCanvas.height/2 - 20);
-            this.profCtx.fillText('SILVER', this.profCanvas.width/2, this.profCanvas.height/2 + 20);
+            this.profCtx.fillText('PROF', this.profCanvas.width/2, this.profCanvas.height/2 - 40);
+            this.profCtx.fillText('SILVER', this.profCanvas.width/2, this.profCanvas.height/2 + 40);
+            
+            // Aggiunge un bordo per il fallback
+            this.profCtx.strokeStyle = '#4ecdc4';
+            this.profCtx.lineWidth = 4;
+            this.profCtx.strokeRect(20, 20, this.profCanvas.width - 40, this.profCanvas.height - 40);
             return;
         }
         
         this.profCtx.clearRect(0, 0, this.profCanvas.width, this.profCanvas.height);
         
-        const frameWidth = this.profSpritesheet.width / this.profFrameCount;
-        const frameHeight = this.profSpritesheet.height;
+        // Calcola dimensioni per spritesheet 2048x768 (4 frame da 512x768)
+        const frameWidth = this.profSpritesheet.width / this.profFrameCount; // 512px
+        const frameHeight = this.profSpritesheet.height; // 768px
         
+        // Disegna il frame corrente riempiendo tutto il canvas
         this.profCtx.drawImage(
             this.profSpritesheet,
-            this.profAnimFrame * frameWidth, 0,
-            frameWidth, frameHeight,
-            0, 0,
-            this.profCanvas.width, this.profCanvas.height
+            this.profAnimFrame * frameWidth, 0,    // Posizione nel spritesheet
+            frameWidth, frameHeight,               // Dimensioni del frame (512x768)
+            0, 0,                                  // Posizione nel canvas
+            this.profCanvas.width, this.profCanvas.height  // Riempi tutto il canvas
         );
     }
     
@@ -601,9 +772,8 @@ window.IntroManager = class IntroManager {
         if (!this.isActive) return;
         
         this.animationTime += 0.02;
-        this.updateStars();
+        // Rimuoviamo l'aggiornamento stelle dal canvas perché usiamo CSS
         this.updateProfAnimation();
-        this.renderBackground();
         
         requestAnimationFrame(() => this.introLoop());
     }
@@ -611,11 +781,21 @@ window.IntroManager = class IntroManager {
     endIntro() {
         this.isActive = false;
         
+        // Rimuovi event listeners
+        if (this.keydownHandler) {
+            document.removeEventListener('keydown', this.keydownHandler);
+        }
+        
+        // Mostra minimap quando inizia il gioco
+        this.showMinimap();
+        
         this.overlay.style.transition = 'opacity 1s ease-out';
         this.overlay.style.opacity = '0';
         
         setTimeout(() => {
-            document.body.removeChild(this.overlay);
+            if (document.body.contains(this.overlay)) {
+                document.body.removeChild(this.overlay);
+            }
             this.game.startMainGame();
             console.log(`Benvenuto nel mondo di SilverStudio! Personaggio: ${this.selectedGender}`);
         }, 1000);

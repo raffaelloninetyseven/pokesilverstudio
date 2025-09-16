@@ -14,6 +14,9 @@ window.MainMenu = class MainMenu {
         this.generateStars();
         this.loadLogo();
         
+        // Nascondi minimap durante il menu
+        this.hideMinimap();
+        
         this.menuOptions = [
             { text: 'NUOVA PARTITA', action: 'newGame' },
             { text: 'IMPOSTAZIONI', action: 'settings' },
@@ -22,6 +25,13 @@ window.MainMenu = class MainMenu {
         
         this.setupEventListeners();
         this.menuLoop();
+    }
+    
+    hideMinimap() {
+        const minimap = document.getElementById('minimap');
+        if (minimap) {
+            minimap.style.display = 'none';
+        }
     }
     
     loadLogo() {
