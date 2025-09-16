@@ -22,6 +22,9 @@ window.Game = class Game {
         
         this.showMainMenu();
         this.setupResizeListener();
+        
+        // Avvia sempre il gameLoop per gestire menu e intro
+        this.gameLoop();
     }
     
     setupCanvas() {
@@ -88,12 +91,11 @@ window.Game = class Game {
         try {
             await this.spriteManager.loadAllSprites();
             this.assetsLoaded = true;
-            console.log('Assets caricati, avvio gioco...');
-            this.gameLoop();
+            console.log('Assets caricati, gioco pronto!');
+            // Non avviare automaticamente il loop, sarà gestito dal main menu
         } catch (error) {
             console.warn('Errore caricamento sprite, continuo con fallback:', error);
             this.assetsLoaded = true;
-            this.gameLoop();
         }
     }
     
@@ -120,20 +122,6 @@ window.Game = class Game {
     
     render() {
         this.ctx.clearRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
-        
-        if (!this.gameStarted) {
-            this.ctx.fillStyle = '#000';
-            this.ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
-            
-            this.ctx.fillStyle = '#fff';
-            this.ctx.font = `${Math.min(CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT) * 0.04}px "Press Start 2P"`;
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText('SILVERSTUDIO', CONFIG.CANVAS_WIDTH/2, CONFIG.CANVAS_HEIGHT/2 - 20);
-            
-            this.ctx.font = `${Math.min(CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT) * 0.02}px "Press Start 2P"`;
-            this.ctx.fillText('PORTFOLIO GAME', CONFIG.CANVAS_WIDTH/2, CONFIG.CANVAS_HEIGHT/2 + 20);
-            return;
-        }
         
         if (!this.assetsLoaded) {
             this.ctx.fillStyle = '#1e3c72';
@@ -209,8 +197,11 @@ window.Game = class Game {
         this.deltaTime = currentTime - this.lastTime;
         this.lastTime = currentTime;
         
-        this.update(this.deltaTime);
-        this.render();
+        // Solo update e render se il gioco è effettivamente avviato
+        if (this.gameStarted) {
+            this.update(this.deltaTime);
+            this.render();
+        }
         
         requestAnimationFrame((time) => this.gameLoop(time));
     }

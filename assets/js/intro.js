@@ -15,6 +15,7 @@ window.IntroManager = class IntroManager {
         
         this.selectedGender = null;
         this.playerName = 'Visitatore';
+        this.selectedGenderIndex = 0; // 0 = male, 1 = female
         
         // Prof Silver Animation
         this.profSpritesheet = null;
@@ -133,6 +134,9 @@ window.IntroManager = class IntroManager {
                             <div class="character-sprite" id="girl-sprite">👩</div>
                             <div class="character-label">Ragazza</div>
                         </div>
+                    </div>
+                    <div class="gender-controls">
+                        <span class="control-hint">FRECCE/AD - Naviga   SPAZIO - Seleziona</span>
                     </div>
                 </div>
             </div>
@@ -296,9 +300,10 @@ window.IntroManager = class IntroManager {
                 border-radius: 8px;
             }
             
-            .gender-option:hover {
+            .gender-option:hover,
+            .gender-option.keyboard-selected {
                 background: rgba(42, 82, 152, 0.9);
-                transform: translateY(-5px);
+                transform: translateY(-5px) scale(1.1);
                 box-shadow: 0 10px 30px rgba(78, 205, 196, 0.4);
             }
             
@@ -306,6 +311,7 @@ window.IntroManager = class IntroManager {
                 background: rgba(78, 205, 196, 0.9);
                 color: #1a1a1a;
                 box-shadow: 0 0 40px rgba(78, 205, 196, 0.7);
+                transform: translateY(-5px) scale(1.1);
             }
             
             .character-sprite {
@@ -339,6 +345,17 @@ window.IntroManager = class IntroManager {
             .gender-option.selected .character-label {
                 color: #1a1a1a;
                 font-weight: bold;
+            }
+            
+            .gender-controls {
+                margin-top: clamp(15px, 3vw, 25px);
+                text-align: center;
+            }
+            
+            .control-hint {
+                font-size: clamp(6px, 1.2vw, 8px);
+                color: #4ecdc4;
+                opacity: 0.8;
             }
             
             @media (max-width: 768px) {
@@ -490,7 +507,7 @@ window.IntroManager = class IntroManager {
     }
     
     setupEventListeners() {
-        // Event listener semplificato solo per tastiera
+        // Event listener per tastiera con navigazione gender
         this.keydownHandler = (e) => {
             if (!this.isActive) return;
             
@@ -498,13 +515,26 @@ window.IntroManager = class IntroManager {
             
             if (e.code === 'Space') {
                 e.preventDefault();
-                this.handleSpacePress();
+                if (this.currentStep === 'gender') {
+                    // Seleziona il genere evidenziato
+                    this.selectGender(this.selectedGenderIndex === 0 ? 'male' : 'female');
+                } else {
+                    this.handleSpacePress();
+                }
+            } else if (this.currentStep === 'gender' && (e.code === 'ArrowLeft' || e.code === 'KeyA')) {
+                e.preventDefault();
+                this.selectedGenderIndex = 0;
+                this.updateGenderSelection();
+            } else if (this.currentStep === 'gender' && (e.code === 'ArrowRight' || e.code === 'KeyD')) {
+                e.preventDefault();
+                this.selectedGenderIndex = 1;
+                this.updateGenderSelection();
             }
         };
         
         document.addEventListener('keydown', this.keydownHandler);
         
-        // Click listeners solo per selezione genere
+        // Click listeners per selezione genere
         this.setupGenderClickListeners();
     }
     
@@ -513,8 +543,22 @@ window.IntroManager = class IntroManager {
             const genderOptions = document.querySelectorAll('.gender-option');
             console.log('Setting up gender listeners for', genderOptions.length, 'options');
             
-            genderOptions.forEach(option => {
-                // Solo click handler, senza animazioni hover per ora
+            genderOptions.forEach((option, index) => {
+                const canvas = option.querySelector('canvas');
+                
+                // Hover animation
+                option.addEventListener('mouseenter', () => {
+                    this.selectedGenderIndex = index;
+                    this.updateGenderSelection();
+                    this.startHoverAnimation(canvas);
+                });
+                
+                // Stop animation on leave
+                option.addEventListener('mouseleave', () => {
+                    this.stopHoverAnimation(canvas);
+                });
+                
+                // Click handler
                 option.addEventListener('click', (e) => {
                     e.preventDefault();
                     console.log('Gender clicked:', option.dataset.gender, 'Current step:', this.currentStep);
@@ -524,6 +568,73 @@ window.IntroManager = class IntroManager {
                 });
             });
         }, 200);
+    }
+    
+    startHoverAnimation(canvas) {
+        if (!canvas || !canvas.dataset.spritesheet) return;
+        
+        // Stop existing animation
+        this.stopHoverAnimation(canvas);
+        
+        const img = new Image();
+        img.onload = () => {
+            const ctx = canvas.getContext('2d');
+            const frameWidth = parseInt(canvas.dataset.frameWidth);
+            const frameHeight = parseInt(canvas.dataset.frameHeight);
+            let animationFrame = 0;
+            
+            // Avvia animazione hover
+            canvas.animationInterval = setInterval(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(
+                    img,
+                    (animationFrame % 4) * frameWidth, 0, frameWidth, frameHeight,
+                    8, 8, 48, 48
+                );
+                animationFrame++;
+            }, 200);
+        };
+        img.src = canvas.dataset.spritesheet;
+    }
+    
+    stopHoverAnimation(canvas) {
+        if (!canvas || !canvas.dataset.spritesheet) return;
+        
+        if (canvas.animationInterval) {
+            clearInterval(canvas.animationInterval);
+            canvas.animationInterval = null;
+        }
+        
+        const img = new Image();
+        img.onload = () => {
+            const ctx = canvas.getContext('2d');
+            const frameWidth = parseInt(canvas.dataset.frameWidth);
+            const frameHeight = parseInt(canvas.dataset.frameHeight);
+            
+            // Torna al frame 0 (idle)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(
+                img,
+                0, 0, frameWidth, frameHeight,
+                8, 8, 48, 48
+            );
+        };
+        img.src = canvas.dataset.spritesheet;
+    }
+    
+    updateGenderSelection() {
+        const genderOptions = document.querySelectorAll('.gender-option');
+        genderOptions.forEach((option, index) => {
+            const canvas = option.querySelector('canvas');
+            
+            if (index === this.selectedGenderIndex) {
+                option.classList.add('keyboard-selected');
+                this.startHoverAnimation(canvas);
+            } else {
+                option.classList.remove('keyboard-selected');
+                this.stopHoverAnimation(canvas);
+            }
+        });
     }
     
     handleSpacePress() {
@@ -616,8 +727,12 @@ window.IntroManager = class IntroManager {
         if (genderSelection) {
             genderSelection.style.display = 'block';
             console.log('Gender selection shown');
-            // Setup click listeners quando mostri la selezione
+            // Setup click listeners e selezione iniziale
             this.setupGenderClickListeners();
+            // Avvia con il primo elemento selezionato
+            setTimeout(() => {
+                this.updateGenderSelection();
+            }, 300);
         }
     }
     
