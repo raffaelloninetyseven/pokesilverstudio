@@ -23,7 +23,6 @@ window.Game = class Game {
         this.showMainMenu();
         this.setupResizeListener();
         
-        // Avvia sempre il gameLoop per gestire menu e intro
         this.gameLoop();
     }
     
@@ -72,13 +71,16 @@ window.Game = class Game {
     }
     
     startIntro() {
+        if (this.mainMenu) {
+            this.mainMenu.destroy();
+            this.mainMenu = null;
+        }
         this.intro = new IntroManager(this);
     }
     
     startMainGame() {
         this.gameStarted = true;
         
-        // Mostra minimap quando inizia il gioco principale
         const minimap = document.getElementById('minimap');
         if (minimap) {
             minimap.style.display = 'block';
@@ -92,7 +94,6 @@ window.Game = class Game {
             await this.spriteManager.loadAllSprites();
             this.assetsLoaded = true;
             console.log('Assets caricati, gioco pronto!');
-            // Non avviare automaticamente il loop, sarà gestito dal main menu
         } catch (error) {
             console.warn('Errore caricamento sprite, continuo con fallback:', error);
             this.assetsLoaded = true;
@@ -122,6 +123,8 @@ window.Game = class Game {
     
     render() {
         this.ctx.clearRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+        
+        if (!this.gameStarted) return;
         
         if (!this.assetsLoaded) {
             this.ctx.fillStyle = '#1e3c72';
@@ -197,7 +200,6 @@ window.Game = class Game {
         this.deltaTime = currentTime - this.lastTime;
         this.lastTime = currentTime;
         
-        // Solo update e render se il gioco è effettivamente avviato
         if (this.gameStarted) {
             this.update(this.deltaTime);
             this.render();
@@ -221,4 +223,4 @@ window.Game = class Game {
         this.player.y = y * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
         console.log(`Player teletrasportato a: ${x}, ${y}`);
     }
-};
+}

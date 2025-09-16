@@ -15,9 +15,8 @@ window.IntroManager = class IntroManager {
         
         this.selectedGender = null;
         this.playerName = 'Visitatore';
-        this.selectedGenderIndex = 0; // 0 = male, 1 = female
+        this.selectedGenderIndex = 0;
         
-        // Prof Silver Animation
         this.profSpritesheet = null;
         this.profLoaded = false;
         this.profAnimFrame = 0;
@@ -25,7 +24,6 @@ window.IntroManager = class IntroManager {
         this.profFrameCount = 4;
         this.profAnimSpeed = 0.1;
         
-        // Stars background (come mainMenu)
         this.stars = [];
         this.animationTime = 0;
         this.generateStars();
@@ -35,9 +33,7 @@ window.IntroManager = class IntroManager {
         this.boyLoaded = false;
         this.girlLoaded = false;
         
-        // Nascondi minimap durante l'intro
         this.hideMinimap();
-        
         this.loadProfSpritesheet();
         
         this.dialogues = {
@@ -159,7 +155,6 @@ window.IntroManager = class IntroManager {
                 overflow: hidden;
             }
             
-            /* Stelle animate dietro tutto */
             #intro-overlay::before {
                 content: '';
                 position: absolute;
@@ -439,7 +434,6 @@ window.IntroManager = class IntroManager {
     loadBoySprite() {
         const boyImg = new Image();
         boyImg.onload = () => {
-            // Canvas più piccolo per i personaggi
             const boyCanvas = document.createElement('canvas');
             boyCanvas.width = 64;
             boyCanvas.height = 64;
@@ -449,11 +443,10 @@ window.IntroManager = class IntroManager {
             const frameWidth = boyImg.width / 4;
             const frameHeight = boyImg.height;
             
-            // Disegna il primo frame (idle)
             boyCtx.drawImage(
                 boyImg, 
-                0, 0, frameWidth, frameHeight,  // Frame 0 dal spritesheet
-                8, 8, 48, 48                    // Centra nel canvas più piccolo
+                0, 0, frameWidth, frameHeight,
+                8, 8, 48, 48
             );
             
             const boySprite = document.getElementById('boy-sprite');
@@ -474,7 +467,6 @@ window.IntroManager = class IntroManager {
     loadGirlSprite() {
         const girlImg = new Image();
         girlImg.onload = () => {
-            // Canvas più piccolo per i personaggi
             const girlCanvas = document.createElement('canvas');
             girlCanvas.width = 64;
             girlCanvas.height = 64;
@@ -484,11 +476,10 @@ window.IntroManager = class IntroManager {
             const frameWidth = girlImg.width / 4;
             const frameHeight = girlImg.height;
             
-            // Disegna il primo frame (idle)
             girlCtx.drawImage(
                 girlImg, 
-                0, 0, frameWidth, frameHeight,  // Frame 0 dal spritesheet
-                8, 8, 48, 48                    // Centra nel canvas più piccolo
+                0, 0, frameWidth, frameHeight,
+                8, 8, 48, 48
             );
             
             const girlSprite = document.getElementById('girl-sprite');
@@ -507,7 +498,6 @@ window.IntroManager = class IntroManager {
     }
     
     setupEventListeners() {
-        // Event listener per tastiera con navigazione gender
         this.keydownHandler = (e) => {
             if (!this.isActive) return;
             
@@ -516,7 +506,6 @@ window.IntroManager = class IntroManager {
             if (e.code === 'Space') {
                 e.preventDefault();
                 if (this.currentStep === 'gender') {
-                    // Seleziona il genere evidenziato
                     this.selectGender(this.selectedGenderIndex === 0 ? 'male' : 'female');
                 } else {
                     this.handleSpacePress();
@@ -533,8 +522,6 @@ window.IntroManager = class IntroManager {
         };
         
         document.addEventListener('keydown', this.keydownHandler);
-        
-        // Click listeners per selezione genere
         this.setupGenderClickListeners();
     }
     
@@ -546,19 +533,16 @@ window.IntroManager = class IntroManager {
             genderOptions.forEach((option, index) => {
                 const canvas = option.querySelector('canvas');
                 
-                // Hover animation
                 option.addEventListener('mouseenter', () => {
                     this.selectedGenderIndex = index;
                     this.updateGenderSelection();
                     this.startHoverAnimation(canvas);
                 });
                 
-                // Stop animation on leave
                 option.addEventListener('mouseleave', () => {
                     this.stopHoverAnimation(canvas);
                 });
                 
-                // Click handler
                 option.addEventListener('click', (e) => {
                     e.preventDefault();
                     console.log('Gender clicked:', option.dataset.gender, 'Current step:', this.currentStep);
@@ -573,7 +557,6 @@ window.IntroManager = class IntroManager {
     startHoverAnimation(canvas) {
         if (!canvas || !canvas.dataset.spritesheet) return;
         
-        // Stop existing animation
         this.stopHoverAnimation(canvas);
         
         const img = new Image();
@@ -583,7 +566,6 @@ window.IntroManager = class IntroManager {
             const frameHeight = parseInt(canvas.dataset.frameHeight);
             let animationFrame = 0;
             
-            // Avvia animazione hover
             canvas.animationInterval = setInterval(() => {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(
@@ -611,7 +593,6 @@ window.IntroManager = class IntroManager {
             const frameWidth = parseInt(canvas.dataset.frameWidth);
             const frameHeight = parseInt(canvas.dataset.frameHeight);
             
-            // Torna al frame 0 (idle)
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(
                 img,
@@ -640,25 +621,21 @@ window.IntroManager = class IntroManager {
     handleSpacePress() {
         console.log('Space pressed - Current step:', this.currentStep, 'Text index:', this.textIndex, 'Is typing:', this.isTyping);
         
-        // Se stiamo digitando, salta il typing
         if (this.isTyping) {
             this.skipTyping = true;
             return;
         }
         
-        // Se siamo nella fase gender e non abbiamo selezionato, non fare nulla
         if (this.currentStep === 'gender' && !this.selectedGender) {
             console.log('Waiting for gender selection...');
             return;
         }
         
-        // Se ci sono ancora dialoghi da mostrare
         if (this.textIndex < this.currentDialogue.length - 1) {
             this.textIndex++;
             console.log('Next dialogue:', this.textIndex, '/', this.currentDialogue.length - 1);
             this.startTypewriter();
         } else {
-            // Passa al prossimo step
             console.log('Going to next step from:', this.currentStep);
             this.nextStep();
         }
@@ -668,7 +645,6 @@ window.IntroManager = class IntroManager {
         console.log('Selecting gender:', gender);
         this.selectedGender = gender;
         
-        // Aggiorna visual selection
         document.querySelectorAll('.gender-option').forEach(opt => {
             opt.classList.remove('selected');
         });
@@ -677,10 +653,8 @@ window.IntroManager = class IntroManager {
             selectedElement.classList.add('selected');
         }
         
-        // Aggiorna config
         CONFIG.PLAYER_GENDER = gender;
         
-        // Procedi automaticamente dopo un piccolo delay
         setTimeout(() => {
             this.nextStep();
         }, 800);
@@ -727,9 +701,7 @@ window.IntroManager = class IntroManager {
         if (genderSelection) {
             genderSelection.style.display = 'block';
             console.log('Gender selection shown');
-            // Setup click listeners e selezione iniziale
             this.setupGenderClickListeners();
-            // Avvia con il primo elemento selezionato
             setTimeout(() => {
                 this.updateGenderSelection();
             }, 300);
@@ -850,7 +822,6 @@ window.IntroManager = class IntroManager {
         if (!this.profLoaded || !this.profSpritesheet.complete) {
             this.profCtx.clearRect(0, 0, this.profCanvas.width, this.profCanvas.height);
             
-            // Fallback più dettagliato
             this.profCtx.fillStyle = '#1a1a1a';
             this.profCtx.fillRect(0, 0, this.profCanvas.width, this.profCanvas.height);
             
@@ -860,7 +831,6 @@ window.IntroManager = class IntroManager {
             this.profCtx.fillText('PROF', this.profCanvas.width/2, this.profCanvas.height/2 - 40);
             this.profCtx.fillText('SILVER', this.profCanvas.width/2, this.profCanvas.height/2 + 40);
             
-            // Aggiunge un bordo per il fallback
             this.profCtx.strokeStyle = '#4ecdc4';
             this.profCtx.lineWidth = 4;
             this.profCtx.strokeRect(20, 20, this.profCanvas.width - 40, this.profCanvas.height - 40);
@@ -869,17 +839,15 @@ window.IntroManager = class IntroManager {
         
         this.profCtx.clearRect(0, 0, this.profCanvas.width, this.profCanvas.height);
         
-        // Calcola dimensioni per spritesheet 2048x768 (4 frame da 512x768)
-        const frameWidth = this.profSpritesheet.width / this.profFrameCount; // 512px
-        const frameHeight = this.profSpritesheet.height; // 768px
+        const frameWidth = this.profSpritesheet.width / this.profFrameCount;
+        const frameHeight = this.profSpritesheet.height;
         
-        // Disegna il frame corrente riempiendo tutto il canvas
         this.profCtx.drawImage(
             this.profSpritesheet,
-            this.profAnimFrame * frameWidth, 0,    // Posizione nel spritesheet
-            frameWidth, frameHeight,               // Dimensioni del frame (512x768)
-            0, 0,                                  // Posizione nel canvas
-            this.profCanvas.width, this.profCanvas.height  // Riempi tutto il canvas
+            this.profAnimFrame * frameWidth, 0,
+            frameWidth, frameHeight,
+            0, 0,
+            this.profCanvas.width, this.profCanvas.height
         );
     }
     
@@ -887,7 +855,6 @@ window.IntroManager = class IntroManager {
         if (!this.isActive) return;
         
         this.animationTime += 0.02;
-        // Rimuoviamo l'aggiornamento stelle dal canvas perché usiamo CSS
         this.updateProfAnimation();
         
         requestAnimationFrame(() => this.introLoop());
@@ -896,13 +863,9 @@ window.IntroManager = class IntroManager {
     endIntro() {
         this.isActive = false;
         
-        // Rimuovi event listeners
         if (this.keydownHandler) {
             document.removeEventListener('keydown', this.keydownHandler);
         }
-        
-        // Mostra minimap quando inizia il gioco
-        this.showMinimap();
         
         this.overlay.style.transition = 'opacity 1s ease-out';
         this.overlay.style.opacity = '0';
@@ -911,8 +874,16 @@ window.IntroManager = class IntroManager {
             if (document.body.contains(this.overlay)) {
                 document.body.removeChild(this.overlay);
             }
+            
+            // Rimuovi immediatamente il main menu se esiste
+            if (this.game.mainMenu) {
+                this.game.mainMenu.isActive = false;
+                this.game.mainMenu = null;
+            }
+            
+            this.showMinimap();
             this.game.startMainGame();
             console.log(`Benvenuto nel mondo di SilverStudio! Personaggio: ${this.selectedGender}`);
         }, 1000);
     }
-};
+}

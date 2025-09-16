@@ -14,7 +14,6 @@ window.MainMenu = class MainMenu {
         this.generateStars();
         this.loadLogo();
         
-        // Nascondi minimap durante il menu
         this.hideMinimap();
         
         this.menuOptions = [
@@ -399,4 +398,11 @@ window.MainMenu = class MainMenu {
         
         requestAnimationFrame(() => this.menuLoop());
     }
-};
+    
+    destroy() {
+        this.isActive = false;
+        if (this.keyHandler) {
+            document.removeEventListener('keydown', this.keyHandler);
+        }
+    }
+}
