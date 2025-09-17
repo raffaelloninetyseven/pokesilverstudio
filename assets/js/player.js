@@ -37,15 +37,33 @@ window.Player = class Player {
         const newX = this.x + dx * this.walkSpeed;
         const newY = this.y + dy * this.walkSpeed;
         
-        if (map.canMoveTo(newX, newY, this.size)) {
-            this.x = newX;
-            this.y = newY;
-        } else {
-            if (map.canMoveTo(newX, this.y, this.size)) {
+        // Controlla se siamo in un interno
+        const game = window.game;
+        const isInterior = game && game.interiorManager && game.interiorManager.currentInterior;
+        
+        if (isInterior) {
+            // Collision detection per interni
+            const interior = map;
+            const tileSize = CONFIG.TILE_SIZE;
+            
+            // Controlla bordi dell'interno
+            if (newX >= tileSize && newX <= (interior.width - 1) * tileSize && 
+                newY >= tileSize && newY <= (interior.height - 1) * tileSize) {
                 this.x = newX;
-            }
-            if (map.canMoveTo(this.x, newY, this.size)) {
                 this.y = newY;
+            }
+        } else {
+            // Collision detection normale per mappa esterna
+            if (map.canMoveTo(newX, newY, this.size)) {
+                this.x = newX;
+                this.y = newY;
+            } else {
+                if (map.canMoveTo(newX, this.y, this.size)) {
+                    this.x = newX;
+                }
+                if (map.canMoveTo(this.x, newY, this.size)) {
+                    this.y = newY;
+                }
             }
         }
     }
@@ -59,20 +77,24 @@ window.Player = class Player {
     }
     
     render(ctx, camera, spriteManager) {
-        const isInterior = this.game && this.game.interiorManager && this.game.interiorManager.currentInterior;
-
+        // Ottieni riferimento al game se disponibile
+        const game = window.game;
+        const isInterior = game && game.interiorManager && game.interiorManager.currentInterior;
+        
         let screenPos;
         if (isInterior) {
-            // Calcola posizione relativa all'edificio centrato
-            const interior = this.game.map;
+            // Negli interni, calcola posizione relativa al centro dell'edificio
+            const interior = game.map;
             const buildingPixelWidth = interior.width * CONFIG.TILE_SIZE;
             const buildingPixelHeight = interior.height * CONFIG.TILE_SIZE;
             const offsetX = (CONFIG.CANVAS_WIDTH - buildingPixelWidth) / 2;
             const offsetY = (CONFIG.CANVAS_HEIGHT - buildingPixelHeight) / 2;
             
+            // Il player x,y sono già in coordinate assolute dell'interno
+            // Dobbiamo solo trasformarle in coordinate schermo centrate
             screenPos = {
-                x: offsetX + this.x - (interior.width * CONFIG.TILE_SIZE) / 2 + (interior.width * CONFIG.TILE_SIZE) / 2,
-                y: offsetY + this.y - (interior.height * CONFIG.TILE_SIZE) / 2 + (interior.height * CONFIG.TILE_SIZE) / 2
+                x: offsetX + this.x,
+                y: offsetY + this.y
             };
         } else {
             screenPos = camera.worldToScreen(this.x, this.y);
@@ -84,7 +106,7 @@ window.Player = class Player {
         ctx.ellipse(screenPos.x, screenPos.y + 8, 6, 3, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Animazione bobbing se si muove
+        // Resto del rendering del player rimane uguale...
         let bobOffset = 0;
         if (this.isMoving) {
             bobOffset = Math.sin(this.animationFrame * Math.PI * 0.5) * 1;
@@ -92,7 +114,6 @@ window.Player = class Player {
         
         const renderY = screenPos.y + bobOffset;
         
-        // Prova a usare sprite, altrimenti fallback pixel art
         const spriteDrawn = spriteManager && spriteManager.drawSprite(
             ctx, 'player', screenPos.x, renderY, 
             this.isMoving ? this.animationFrame : 0, 
@@ -100,30 +121,24 @@ window.Player = class Player {
         );
         
         if (!spriteDrawn) {
-            // Sprite diversi in base al genere
+            // Fallback rendering...
             if (CONFIG.PLAYER_GENDER === 'female') {
-                // Personaggio femminile
-                ctx.fillStyle = '#e91e63'; // Rosa
+                ctx.fillStyle = '#e91e63';
                 ctx.fillRect(screenPos.x - 6, renderY - 8, 12, 14);
-                
-                ctx.fillStyle = '#ffeb3b'; // Capelli biondi
+                ctx.fillStyle = '#ffeb3b';
                 ctx.fillRect(screenPos.x - 5, renderY - 12, 10, 6);
-                
-                ctx.fillStyle = '#9c27b0'; // Cappello viola
+                ctx.fillStyle = '#9c27b0';
                 ctx.fillRect(screenPos.x - 6, renderY - 14, 12, 3);
             } else {
-                // Personaggio maschile (originale)
                 ctx.fillStyle = '#3498db';
                 ctx.fillRect(screenPos.x - 6, renderY - 8, 12, 14);
-                
                 ctx.fillStyle = '#f39c12';
                 ctx.fillRect(screenPos.x - 5, renderY - 12, 10, 6);
-                
                 ctx.fillStyle = '#e74c3c';
                 ctx.fillRect(screenPos.x - 6, renderY - 14, 12, 3);
             }
             
-            // Occhi (uguali per entrambi)
+            // Occhi
             ctx.fillStyle = '#000';
             if (this.direction === 'left') {
                 ctx.fillRect(screenPos.x - 3, renderY - 10, 1, 1);
@@ -134,7 +149,7 @@ window.Player = class Player {
                 ctx.fillRect(screenPos.x + 2, renderY - 10, 1, 1);
             }
             
-            // Gambe (animazione camminata)
+            // Gambe
             if (this.isMoving) {
                 const legOffset = Math.sin(this.animationFrame * Math.PI) * 2;
                 ctx.fillStyle = '#2c3e50';

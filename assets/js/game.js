@@ -108,22 +108,29 @@ window.Game = class Game {
         
         this.player.update(this.inputManager, this.map);
         this.camera.follow(this.player);
-        this.buildings.update(this.player);
         
-        if (this.inputManager.wasPressed('Space') || this.inputManager.wasPressed('Enter')) {
-            const interaction = this.buildings.interact();
-            if (interaction) {
-                if (interaction.type === 'enter_building') {
-                    this.interiorManager.enterBuilding(interaction.building);
-                } else {
-                    this.ui.showDialog(interaction.message);
-                }
-            }
+        // Aggiorna interior manager se siamo in un interno
+        if (this.interiorManager.currentInterior) {
+            this.interiorManager.update(this.player);
+        } else {
+            this.buildings.update(this.player);
         }
         
-        // Gestione uscita dagli interni
-        if (this.interiorManager.currentInterior && this.inputManager.wasPressed('Escape')) {
-            this.interiorManager.exitBuilding();
+        if (this.inputManager.wasPressed('Space') || this.inputManager.wasPressed('Enter')) {
+            // Controlla se siamo in un interno e vicino alla porta
+            if (this.interiorManager.canInteractWithExit()) {
+                this.interiorManager.exitBuilding();
+            } else if (!this.interiorManager.currentInterior) {
+                // Siamo fuori, controlla interazione con edifici
+                const interaction = this.buildings.interact();
+                if (interaction) {
+                    if (interaction.type === 'enter_building') {
+                        this.interiorManager.enterBuilding(interaction.building);
+                    } else {
+                        this.ui.showDialog(interaction.message);
+                    }
+                }
+            }
         }
         
         if (this.inputManager.wasPressed('Escape') && !this.interiorManager.currentInterior) {
@@ -149,12 +156,20 @@ window.Game = class Game {
             return;
         }
         
-        this.ctx.fillStyle = '#87CEEB';
-        this.ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
-        
-        this.map.render(this.ctx, this.camera, this.spriteManager);
-        this.buildings.render(this.ctx, this.camera, this.spriteManager);
-        this.player.render(this.ctx, this.camera, this.spriteManager);
+        // Controlla se siamo in un interno
+        if (this.interiorManager.currentInterior) {
+            // Rendering dell'interno - NON disegnare mappa esterna
+            this.map.render(this.ctx, this.camera, this.spriteManager);
+            this.player.render(this.ctx, this.camera, this.spriteManager);
+        } else {
+            // Rendering normale della mappa esterna
+            this.ctx.fillStyle = '#87CEEB';
+            this.ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+            
+            this.map.render(this.ctx, this.camera, this.spriteManager);
+            this.buildings.render(this.ctx, this.camera, this.spriteManager);
+            this.player.render(this.ctx, this.camera, this.spriteManager);
+        }
         
         this.renderUI();
     }

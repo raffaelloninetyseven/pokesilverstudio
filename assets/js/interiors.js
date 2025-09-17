@@ -3,6 +3,8 @@ window.InteriorManager = class InteriorManager {
         this.game = game;
         this.currentInterior = null;
         this.exteriorPlayerPos = { x: 0, y: 0 };
+        this.currentBuilding = null; // Traccia l'edificio corrente
+        this.nearExit = false; // Traccia se siamo vicino alla porta
         
         this.interiorMaps = {
             projects_interior: this.createProjectsInterior(),
@@ -12,13 +14,72 @@ window.InteriorManager = class InteriorManager {
         };
     }
     
-    // Funzione generica per rendering interni
+    // Nuovo metodo per controllare vicinanza alla porta
+    update(player) {
+        if (!this.currentInterior) return;
+        
+        const interior = this.game.map;
+        const doorX = 7 * CONFIG.TILE_SIZE;
+        const doorY = (interior.height - 1) * CONFIG.TILE_SIZE;
+        
+        // Calcola distanza dal player alla porta
+        const distance = Math.sqrt(
+            Math.pow(player.x - doorX, 2) + Math.pow(player.y - doorY, 2)
+        );
+        
+        // Se il player è vicino alla porta (entro 1.5 tile)
+        this.nearExit = distance <= (CONFIG.TILE_SIZE * 1.5);
+    }
+    
+    // Modifica per interazione con porta
+    canInteractWithExit() {
+        return this.currentInterior && this.nearExit;
+    }
+    
+    enterBuilding(building) {
+        this.exteriorPlayerPos = {
+            x: this.game.player.x,
+            y: this.game.player.y
+        };
+        
+        this.currentInterior = building.interiorMap;
+        this.currentBuilding = building; // Salva l'edificio corrente
+        this.game.map = this.interiorMaps[building.interiorMap];
+        
+        this.game.player.x = 7 * CONFIG.TILE_SIZE;
+        this.game.player.y = (this.game.map.height - 3) * CONFIG.TILE_SIZE;
+        
+        this.game.camera.followSpeed = 0;
+    }
+    
+    exitBuilding() {
+        if (!this.currentInterior || !this.currentBuilding) return;
+        
+        // Salva posizione di uscita basata sull'edificio
+        const building = this.currentBuilding;
+        const exitX = building.entrance.x * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+        const exitY = (building.entrance.y + 1) * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2; // Un tile sotto l'entrata
+        
+        // Ripristina mappa esterna
+        this.game.map = new GameMap();
+        this.currentInterior = null;
+        this.currentBuilding = null;
+        this.nearExit = false;
+        
+        // Riabilita camera
+        this.game.camera.followSpeed = 0.08;
+        
+        // Posiziona player fuori dall'edificio
+        this.game.player.x = exitX;
+        this.game.player.y = exitY;
+    }
+    
+    // Aggiorna il rendering per mostrare indicatore interazione
     renderInterior(ctx, interior, title, floorColor = '#666', wallColor = '#333') {
         // Overlay nero su tutto lo schermo
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
         
-        // Calcola offset per centrare l'edificio
         const buildingPixelWidth = interior.width * CONFIG.TILE_SIZE;
         const buildingPixelHeight = interior.height * CONFIG.TILE_SIZE;
         const offsetX = (CONFIG.CANVAS_WIDTH - buildingPixelWidth) / 2;
@@ -30,21 +91,17 @@ window.InteriorManager = class InteriorManager {
                 const screenX = offsetX + (x * CONFIG.TILE_SIZE);
                 const screenY = offsetY + (y * CONFIG.TILE_SIZE);
                 
-                // Muri esterni
                 if (x === 0 || x === interior.width-1 || y === 0 || y === interior.height-1) {
                     ctx.fillStyle = wallColor;
                     ctx.fillRect(screenX, screenY, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
                     
-                    // Bordo muro
                     ctx.strokeStyle = '#555';
                     ctx.lineWidth = 1;
                     ctx.strokeRect(screenX, screenY, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
                 } else {
-                    // Pavimento interno
                     ctx.fillStyle = floorColor;
                     ctx.fillRect(screenX, screenY, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
                     
-                    // Pattern pavimento
                     const patternColor = this.lightenColor(floorColor, 20);
                     ctx.fillStyle = patternColor;
                     ctx.fillRect(screenX + 8, screenY + 8, 16, 16);
@@ -64,13 +121,27 @@ window.InteriorManager = class InteriorManager {
         ctx.arc(doorX + 24, doorY + 16, 3, 0, Math.PI * 2);
         ctx.fill();
         
+        // Indicatore interazione se vicino alla porta
+        if (this.nearExit) {
+            const time = Date.now() * 0.005;
+            const bounce = Math.sin(time) * 3;
+            
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px "Press Start 2P"';
+            ctx.textAlign = 'center';
+            ctx.fillText('▲', doorX + CONFIG.TILE_SIZE/2, doorY - 20 + bounce);
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = '8px "Press Start 2P"';
+            ctx.fillText('ESCI (SPACE)', doorX + CONFIG.TILE_SIZE/2, doorY - 35 + bounce);
+        }
+        
         // Titolo edificio
         ctx.fillStyle = '#fff';
         ctx.font = '16px "Press Start 2P"';
         ctx.textAlign = 'center';
         ctx.fillText(title, CONFIG.CANVAS_WIDTH / 2, offsetY - 20);
         
-        // Aggiungi decorazioni specifiche per tipo
         this.addInteriorDecorations(ctx, interior, offsetX, offsetY);
     }
     
@@ -192,28 +263,25 @@ window.InteriorManager = class InteriorManager {
         this.currentInterior = building.interiorMap;
         this.game.map = this.interiorMaps[building.interiorMap];
         
-        // Centra la camera sull'edificio
-        const interior = this.game.map;
-        const centerX = (interior.width * CONFIG.TILE_SIZE) / 2;
-        const centerY = (interior.height * CONFIG.TILE_SIZE) / 2;
+        // Posiziona il player in coordinate relative all'interno (0,0 è l'angolo dell'interno)
+        this.game.player.x = 7 * CONFIG.TILE_SIZE; // Centro orizzontale
+        this.game.player.y = (this.game.map.height - 3) * CONFIG.TILE_SIZE; // Vicino alla porta
         
-        // Posiziona player vicino alla porta
-        this.game.player.x = 7 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
-        this.game.player.y = (interior.height - 3) * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
-        
-        // Forza la camera al centro dell'edificio
-        this.game.camera.x = centerX - CONFIG.CANVAS_WIDTH / 2;
-        this.game.camera.y = centerY - CONFIG.CANVAS_HEIGHT / 2;
-        this.game.camera.targetX = this.game.camera.x;
-        this.game.camera.targetY = this.game.camera.y;
+        // Disabilita il movimento della camera negli interni
+        this.game.camera.followSpeed = 0;
     }
-    
+
     exitBuilding() {
         if (!this.currentInterior) return;
         
+        // Ripristina mappa esterna
         this.game.map = new GameMap();
         this.currentInterior = null;
         
+        // Riabilita camera
+        this.game.camera.followSpeed = 0.08;
+        
+        // Riposiziona player all'esterno
         this.game.player.x = this.exteriorPlayerPos.x;
         this.game.player.y = this.exteriorPlayerPos.y;
     }
