@@ -65,9 +65,11 @@ window.UI = class UI {
             const scaleX = this.minimap.width / (map.width * CONFIG.TILE_SIZE);
             const scaleY = this.minimap.height / (map.height * CONFIG.TILE_SIZE);
             
-            for (let y = 0; y < map.height; y++) {
-                for (let x = 0; x < map.width; x++) {
-                    this.minimapCtx.fillStyle = '#666';
+            for (let y = 0; y < CONFIG.MAP_HEIGHT; y++) {
+                for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
+                    const tile = map.tiles[y][x];
+                    // Tutti i tile grass-flowers appaiono verdi nella minimappa
+                    this.minimapCtx.fillStyle = tile === 'path' ? '#d4b896' : '#4a7c47';
                     this.minimapCtx.fillRect(
                         x * CONFIG.TILE_SIZE * scaleX,
                         y * CONFIG.TILE_SIZE * scaleY,

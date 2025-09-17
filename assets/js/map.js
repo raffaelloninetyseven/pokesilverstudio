@@ -2,32 +2,106 @@ window.GameMap = class GameMap {
     constructor() {
         this.tiles = [];
         this.decorations = [];
+        this.tileVariations = [];
+        this.animationTimer = 0;
         this.generateMap();
+    }
+
+    update() {
+        this.animationTimer++;
+        if (this.animationTimer > 10000) { // Reset per evitare overflow
+            this.animationTimer = 0;
+        }
     }
     
     generateMap() {
         this.tiles = [];
+        this.tileVariations = []; // Nuovo array per salvare le variazioni
         
-        // Genera base con più varietà
+        // Genera mappa e variazioni UNA VOLTA
         for (let y = 0; y < CONFIG.MAP_HEIGHT; y++) {
             this.tiles[y] = [];
+            this.tileVariations[y] = [];
             for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
-                const rand = Math.random();
-                
-                // Zone diverse per varietà visiva
-                if (y < 5 || y > CONFIG.MAP_HEIGHT - 5) {
-                    this.tiles[y][x] = rand > 0.7 ? 'dark_grass' : 'grass';
-                } else if (x < 5 || x > CONFIG.MAP_WIDTH - 5) {
-                    this.tiles[y][x] = rand > 0.6 ? 'sand' : 'grass';
-                } else {
-                    this.tiles[y][x] = rand > 0.65 ? 'dark_grass' : 'grass';
+                this.tiles[y][x] = 'grass-flowers';
+                // Salva la variazione una volta sola
+                this.tileVariations[y][x] = Math.random() > 0.6 ? 1 : 0;
+            }
+        }
+        
+        this.createTreeBorder();
+        this.createMainRoads(); 
+        this.createSpecialAreas();
+        this.generateTreesAndRocks();
+    }
+
+    createTreeBorder() {
+        // Alberi su tutti i bordi per impedire l'uscita
+        for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
+            for (let y = 0; y < CONFIG.MAP_HEIGHT; y++) {
+                if (x === 0 || x === CONFIG.MAP_WIDTH-1 || y === 0 || y === CONFIG.MAP_HEIGHT-1) {
+                    this.decorations.push({ x, y, type: 'tree' });
                 }
             }
         }
         
-        this.createPaths();
-        this.createWaterFeatures();
-        this.generateDecorations();
+        // Entrate - Route 7 equivalente (est) e Route 16 equivalente (ovest)
+        // Cancella gli alberi per le entrate
+        const eastEntrance = { x: CONFIG.MAP_WIDTH-1, y: 20 };
+        const westEntrance = { x: 0, y: 18 };
+        
+        // Rimuovi alberi per creare entrate
+        this.decorations = this.decorations.filter(dec => 
+            !(dec.x === eastEntrance.x && dec.y >= eastEntrance.y-1 && dec.y <= eastEntrance.y+1) &&
+            !(dec.x === westEntrance.x && dec.y >= westEntrance.y-1 && dec.y <= westEntrance.y+1)
+        );
+    }
+
+    createMainRoads() {
+        // Strada orizzontale principale (come in Celadon)
+        for (let x = 1; x < CONFIG.MAP_WIDTH-1; x++) {
+            this.tiles[20][x] = 'path';
+            this.tiles[21][x] = 'path';
+        }
+        
+        // Strada verticale principale
+        for (let y = 8; y < CONFIG.MAP_HEIGHT-2; y++) {
+            this.tiles[y][22] = 'path';
+            this.tiles[y][23] = 'path';
+        }
+        
+        // Strada per raggiungere la Skills Gym (sud)
+        for (let y = 22; y < 35; y++) {
+            this.tiles[y][9] = 'path';
+        }
+        
+        // Strada per il Silver Department
+        for (let x = 9; x < 22; x++) {
+            this.tiles[16][x] = 'path';
+        }
+        
+        // Strada per la Mansion
+        for (let x = 24; x < 38; x++) {
+            this.tiles[14][x] = 'path';
+        }
+    }
+
+    createSpecialAreas() {
+        // Piccolo laghetto decorativo (come la fontana di Celadon)
+        for (let y = 6; y < 10; y++) {
+            for (let x = 26; x < 30; x++) {
+                this.tiles[y][x] = 'water';
+            }
+        }
+        
+        // Piazza centrale con pietra
+        for (let y = 18; y < 24; y++) {
+            for (let x = 20; x < 26; x++) {
+                if (this.tiles[y][x] !== 'path') {
+                    this.tiles[y][x] = 'stone';
+                }
+            }
+        }
     }
     
     createWaterFeatures() {
@@ -90,11 +164,11 @@ window.GameMap = class GameMap {
             }
         });
     }
-    
-    generateDecorations() {
+
+    generateTreesAndRocks() {
         this.decorations = [];
         
-        for (let i = 0; i < 200; i++) {
+        for (let i = 0; i < 100; i++) { // Ridotto da 200 a 100
             const x = Utils.randomInt(0, CONFIG.MAP_WIDTH - 1);
             const y = Utils.randomInt(0, CONFIG.MAP_HEIGHT - 1);
             
@@ -102,15 +176,12 @@ window.GameMap = class GameMap {
                 const rand = Math.random();
                 let type;
                 
-                if (rand < 0.7) {
+                if (rand < 0.8) {
                     type = 'tree';
-                } else if (rand < 0.85) {
-                    type = 'flower1';
-                } else if (rand < 0.95) {
-                    type = 'flower2';
                 } else {
                     type = 'rock';
                 }
+                // Niente più flower1 e flower2
                 
                 this.decorations.push({ x, y, type });
             }
@@ -190,17 +261,28 @@ window.GameMap = class GameMap {
         const screenPos = camera.worldToScreen(x * CONFIG.TILE_SIZE, y * CONFIG.TILE_SIZE);
         const tile = this.tiles[y][x];
         
-        // Prova a usare sprite, altrimenti fallback colori
-        const spriteDrawn = spriteManager && spriteManager.drawTile(ctx, tile, screenPos.x, screenPos.y);
+        let spriteDrawn = false;
+        
+        if (tile === 'water' && spriteManager) {
+            // Usa l'animazione per l'acqua
+            spriteDrawn = spriteManager.drawAnimatedTile(ctx, tile, screenPos.x, screenPos.y, this.animationTimer);
+        } else if (tile === 'grass-flowers' && spriteManager) {
+            const variation = this.tileVariations[y][x];
+            spriteDrawn = spriteManager.drawVariatedTile(ctx, tile, screenPos.x, screenPos.y, variation);
+        } else {
+            spriteDrawn = spriteManager && spriteManager.drawTile(ctx, tile, screenPos.x, screenPos.y);
+        }
         
         if (!spriteDrawn) {
-            ctx.fillStyle = CONFIG.COLORS[tile.toUpperCase()];
-            ctx.fillRect(screenPos.x, screenPos.y, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
-            
-            if (tile === 'path') {
-                ctx.fillStyle = '#c4a484';
-                ctx.fillRect(screenPos.x + 2, screenPos.y + 2, CONFIG.TILE_SIZE - 4, CONFIG.TILE_SIZE - 4);
+            // Fallback per colori
+            if (tile === 'grass-flowers') {
+                ctx.fillStyle = '#4a7c47';
+            } else if (tile === 'water') {
+                ctx.fillStyle = '#4a90e2';
+            } else {
+                ctx.fillStyle = CONFIG.COLORS[tile.toUpperCase()] || '#4a7c47';
             }
+            ctx.fillRect(screenPos.x, screenPos.y, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
         }
     }
     

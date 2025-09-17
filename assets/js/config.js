@@ -1,27 +1,15 @@
 const CONFIG = {
-    TILE_SIZE: 32,
-    MAP_WIDTH: 60,  // Mappa più grande
-    MAP_HEIGHT: 45,
+    TILE_SIZE: 40,
+    MAP_WIDTH: 50,  
+    MAP_HEIGHT: 40,
     CANVAS_WIDTH: 800,
     CANVAS_HEIGHT: 600,
-    PLAYER_SPEED: 2,
+    PLAYER_SPEED: 3,
     ANIMATION_SPEED: 0.15,
     PLAYER_GENDER: 'male',
     
-    // Nuovi tipi di tile per varietà
-    TILE_TYPES: {
-        GRASS: 'grass',
-        DARK_GRASS: 'dark_grass',
-        PATH: 'path',
-        WATER: 'water',
-        SAND: 'sand',
-        STONE: 'stone',
-        BRIDGE: 'bridge'
-    },
-    
     COLORS: {
-        GRASS: '#4a7c47',
-        DARK_GRASS: '#3a6b37',
+        'GRASS-FLOWERS': '#4a7c47', 
         PATH: '#d4b896',
         WATER: '#4a90e2',
         SAND: '#f4e4bc',
@@ -36,50 +24,64 @@ const CONFIG = {
         ROCK: '#696969'
     },
     
-    // Edifici ridisegnati con interni accessibili
     BUILDINGS: [
+        // Centro sviluppo (Department Store equivalente) - edificio principale più grande
         {
-            x: 25, y: 12, width: 8, height: 6,
+            x: 8, y: 15, width: 8, height: 10,
             type: 'projects',
-            name: 'Centro Sviluppo',
-            entrance: { x: 28, y: 18 },
+            name: 'Silver Department',
+            entrance: { x: 11, y: 25 },
             color: '#ff6b6b',
             hasInterior: true,
             interiorMap: 'projects_interior'
         },
+        // Game Corner (Casinò) - mantenuto come richiesto
         {
-            x: 12, y: 20, width: 6, height: 5,
-            type: 'skills',
-            name: 'Laboratorio Skills',
-            entrance: { x: 15, y: 25 },
-            color: '#4ecdc4',
+            x: 25, y: 20, width: 6, height: 6,
+            type: 'casino',
+            name: 'Lucky Skills Casino',
+            entrance: { x: 28, y: 26 },
+            color: '#ffd700',
             hasInterior: true,
-            interiorMap: 'skills_interior'
+            interiorMap: 'casino_interior'
         },
+        // Mansion (Studio personale)
         {
-            x: 40, y: 15, width: 7, height: 6,
+            x: 35, y: 10, width: 7, height: 8,
             type: 'about',
-            name: 'Studio Personale',
-            entrance: { x: 43, y: 21 },
+            name: 'Silver Mansion',
+            entrance: { x: 38, y: 18 },
             color: '#45b7d1',
             hasInterior: true,
             interiorMap: 'about_interior'
         },
+        // Pokémon Center equivalente (Contatti)
         {
-            x: 8, y: 8, width: 5, height: 4,
+            x: 15, y: 5, width: 6, height: 5,
             type: 'contact',
-            name: 'Ufficio Contatti',
-            entrance: { x: 10, y: 12 },
+            name: 'Contact Center',
+            entrance: { x: 18, y: 10 },
             color: '#96ceb4',
             hasInterior: true,
             interiorMap: 'contact_interior'
+        },
+        // Gym equivalente (Skills Lab)
+        {
+            x: 5, y: 28, width: 8, height: 6,
+            type: 'skills',
+            name: 'Skills Gym',
+            entrance: { x: 9, y: 34 },
+            color: '#4ecdc4',
+            hasInterior: true,
+            interiorMap: 'skills_interior'
         }
     ],
     
     DIALOGS: {
-        projects: "Benvenuto nel Centro Sviluppo!\n\nQui trovi tutti i miei progetti: applicazioni web, API, sistemi complessi e soluzioni innovative. Ogni progetto rappresenta una sfida superata!",
-        skills: "Laboratorio Skills!\n\nQui sviluppo e perfeziono le mie competenze: JavaScript, React, Node.js, Python, cloud computing e molto altro. L'innovazione non si ferma mai!",
-        about: "Studio Personale!\n\nScopri la mia storia, il mio percorso professionale e la passione che mi guida nel mondo dello sviluppo. Benvenuto nel mio universo creativo!",
-        contact: "Ufficio Contatti!\n\nHai un progetto? Cerchi collaborazioni? Questo è il posto giusto! Sono sempre aperto a nuove sfide e opportunità interessanti."
+        projects: "Benvenuto al Silver Department!\n\nIl negozio più grande della città! Qui trovi tutti i miei progetti organizzati per categoria: Web Apps, API, Mobile, AI e molto altro. Ogni piano ha una specializzazione diversa!",
+        casino: "Benvenuto al Lucky Skills Casino!\n\nTesta la fortuna mentre esplori le mie competenze! Ogni slot machine rappresenta una tecnologia diversa. Chissà quali sorprese ti aspettano!",
+        about: "Benvenuto alla Silver Mansion!\n\nLa mia residenza personale dove sviluppo le idee più innovative. Qui puoi scoprire la mia storia, il mio percorso e le passioni che guidano il mio lavoro.",
+        contact: "Benvenuto al Contact Center!\n\nIl centro nevralgico per tutte le comunicazioni! Qui puoi contattarmi per progetti, collaborazioni o semplicemente per una chiacchierata tecnica.",
+        skills: "Benvenuto alla Skills Gym!\n\nAllena le tue conoscenze tecniche! Questo è dove perfeziono continuamente le mie competenze e affronto nuove sfide di programmazione."
     }
 };

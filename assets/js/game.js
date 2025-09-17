@@ -105,6 +105,8 @@ window.Game = class Game {
     
     update(deltaTime) {
         if (!this.gameStarted || !this.assetsLoaded) return;
+
+        this.map.update();
         
         this.player.update(this.inputManager, this.map);
         this.camera.follow(this.player);

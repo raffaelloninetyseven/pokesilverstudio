@@ -10,7 +10,8 @@ window.InteriorManager = class InteriorManager {
             projects_interior: this.createProjectsInterior(),
             skills_interior: this.createSkillsInterior(),
             about_interior: this.createAboutInterior(),
-            contact_interior: this.createContactInterior()
+            contact_interior: this.createContactInterior(),
+            casino_interior: this.createCasinoInterior()
         };
     }
     
@@ -183,6 +184,28 @@ window.InteriorManager = class InteriorManager {
             // Telefono per l'ufficio contatti
             ctx.fillStyle = '#000';
             ctx.fillRect(offsetX + (4 * CONFIG.TILE_SIZE), offsetY + (3 * CONFIG.TILE_SIZE), CONFIG.TILE_SIZE/2, CONFIG.TILE_SIZE/3);
+        } else if (interior.type === 'casino') {
+            // Slot machines
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const x = offsetX + (3 + i * 4) * CONFIG.TILE_SIZE;
+                    const y = offsetY + (3 + j * 2) * CONFIG.TILE_SIZE;
+                    
+                    // Slot machine body
+                    ctx.fillStyle = '#444';
+                    ctx.fillRect(x, y, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
+                    
+                    // Screen
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(x + 4, y + 4, CONFIG.TILE_SIZE - 8, CONFIG.TILE_SIZE/2);
+                    
+                    // Symbols (random)
+                    ctx.fillStyle = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'][Math.floor(Math.random() * 4)];
+                    ctx.fillRect(x + 8, y + 8, 6, 6);
+                    ctx.fillRect(x + 14, y + 8, 6, 6);
+                    ctx.fillRect(x + 20, y + 8, 6, 6);
+                }
+            }
         }
     }
     
@@ -251,6 +274,14 @@ window.InteriorManager = class InteriorManager {
             }
         }
         
+        return interior;
+    }
+
+    createCasinoInterior() {
+        const interior = this.createBaseInterior(18, 14, 'casino');
+        interior.render = (ctx, camera, spriteManager) => {
+            this.renderInterior(ctx, interior, 'LUCKY SKILLS CASINO', '#660000', '#330000');
+        };
         return interior;
     }
     

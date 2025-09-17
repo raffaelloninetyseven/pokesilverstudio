@@ -5,36 +5,38 @@ window.SpriteManager = class SpriteManager {
         this.loadingPromises = [];
     }
     
-    // Carica un singolo sprite
-    loadSprite(name, path) {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-                this.sprites[name] = img;
-                resolve(img);
-            };
-            img.onerror = () => {
-                this.sprites[name] = null;
-                resolve(null);
-            };
-            img.src = path;
-        });
-    }
-    
-    // Carica tutti gli sprite necessari
     async loadAllSprites() {
         const spritePaths = {
-            // Player sprites - BOY (4 direzioni con 4 frame ciascuna)
+            // Player sprites
             'player_boy_down': 'assets/sprite/player/player_boy_down.png',
             'player_boy_up': 'assets/sprite/player/player_boy_up.png',
             'player_boy_left': 'assets/sprite/player/player_boy_left.png',
             'player_boy_right': 'assets/sprite/player/player_boy_right.png',
-            
-            // Player sprites - GIRL (4 direzioni con 4 frame ciascuna)
             'player_girl_down': 'assets/sprite/player/player_girl_down.png',
             'player_girl_up': 'assets/sprite/player/player_girl_up.png',
             'player_girl_left': 'assets/sprite/player/player_girl_left.png',
-            'player_girl_right': 'assets/sprite/player/player_girl_right.png'
+            'player_girl_right': 'assets/sprite/player/player_girl_right.png',
+            
+            // Tile sprites (32x32)
+            'grass-flowers': 'assets/sprite/tiles/grass-flowers.png',
+            'path': 'assets/sprite/tiles/path.png',
+            'water': 'assets/sprite/tiles/water.png',
+            'stone': 'assets/sprite/tiles/stone.png',
+            'sand': 'assets/sprite/tiles/sand.png',
+            'bridge': 'assets/sprite/tiles/bridge.png',
+            
+            // Decoration sprites (32x32)
+            'tree': 'assets/sprite/decorations/tree.png',
+            'flower1': 'assets/sprite/decorations/flower1.png',
+            'flower2': 'assets/sprite/decorations/flower2.png',
+            'rock': 'assets/sprite/decorations/rock.png',
+            
+            // Building sprites (dimensioni variabili)
+            'building_projects': 'assets/sprite/buildings/building_projects.png',
+            'building_casino': 'assets/sprite/buildings/building_casino.png',
+            'building_about': 'assets/sprite/buildings/building_about.png',
+            'building_contact': 'assets/sprite/buildings/building_contact.png',
+            'building_skills': 'assets/sprite/buildings/building_skills.png'
         };
         
         console.log('Caricamento sprite...');
@@ -48,14 +50,59 @@ window.SpriteManager = class SpriteManager {
         console.log('Sprite caricati!');
     }
     
-    // Ottieni sprite con fallback
+    loadSprite(name, path) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                this.sprites[name] = img;
+                resolve(img);
+            };
+            img.onerror = () => {
+                console.warn(`Sprite non trovato: ${path}`);
+                this.sprites[name] = null;
+                resolve(null);
+            };
+            img.src = path;
+        });
+    }
+    
     getSprite(name) {
         return this.sprites[name] || null;
     }
     
-    // Verifica se uno sprite esiste
     hasSprite(name) {
         return this.sprites[name] !== null && this.sprites[name] !== undefined;
+    }
+    
+    // Disegna tile della mappa
+    drawTile(ctx, tileName, x, y, width = CONFIG.TILE_SIZE, height = CONFIG.TILE_SIZE) {
+        const sprite = this.getSprite(tileName);
+        if (sprite && sprite.complete) {
+            ctx.drawImage(sprite, x, y, width, height);
+            return true;
+        }
+        return false;
+    }
+    
+    // Disegna decorazione
+    drawDecoration(ctx, decorationName, x, y, width = CONFIG.TILE_SIZE, height = CONFIG.TILE_SIZE) {
+        const sprite = this.getSprite(decorationName);
+        if (sprite && sprite.complete) {
+            ctx.drawImage(sprite, x, y, width, height);
+            return true;
+        }
+        return false;
+    }
+    
+    // Disegna edificio
+    drawBuilding(ctx, buildingName, x, y, width, height) {
+        const sprite = this.getSprite(`building_${buildingName}`);
+        if (sprite && sprite.complete) {
+            // Gli sprite degli edifici possono essere scalati
+            ctx.drawImage(sprite, x, y, width, height);
+            return true;
+        }
+        return false;
     }
     
     // Disegna sprite del player con animazione a 4 frame
@@ -96,6 +143,45 @@ window.SpriteManager = class SpriteManager {
         }
         return false;
     }
+
+    drawVariatedTile(ctx, tileName, x, y, variation = 0) {
+        if (tileName === 'grass-flowers') {
+            const sprite = this.getSprite('grass-flowers');
+            if (sprite && sprite.complete) {
+                const sourceX = variation === 0 ? 0 : 128;
+                // Rimuovi il random qui - usa sempre la stessa sezione verticale
+                const sourceY = 0; // Sempre la prima riga
+                
+                ctx.drawImage(
+                    sprite,
+                    sourceX, sourceY, 128, 32,
+                    x, y, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE
+                );
+                return true;
+            }
+        }
+        return this.drawTile(ctx, tileName, x, y);
+    }
+
+    drawAnimatedTile(ctx, tileName, x, y, animationFrame) {
+        if (tileName === 'water') {
+            const sprite = this.getSprite('water');
+            if (sprite && sprite.complete) {
+                // 4 frame da 32x32 in orizzontale
+                const frameWidth = 32;
+                const frameHeight = 32;
+                const currentFrame = Math.floor(animationFrame / 30) % 4; // Cambia frame ogni 30 tick (~0.5 sec)
+                
+                ctx.drawImage(
+                    sprite,
+                    currentFrame * frameWidth, 0, frameWidth, frameHeight, // Frame specifico
+                    x, y, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE
+                );
+                return true;
+            }
+        }
+        return false;
+    }
     
     // Disegna edificio
     drawBuilding(ctx, buildingName, x, y, width, height) {
@@ -106,4 +192,5 @@ window.SpriteManager = class SpriteManager {
         }
         return false;
     }
+    
 };
