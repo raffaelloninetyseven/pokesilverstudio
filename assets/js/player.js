@@ -59,7 +59,24 @@ window.Player = class Player {
     }
     
     render(ctx, camera, spriteManager) {
-        const screenPos = camera.worldToScreen(this.x, this.y);
+        const isInterior = this.game && this.game.interiorManager && this.game.interiorManager.currentInterior;
+
+        let screenPos;
+        if (isInterior) {
+            // Calcola posizione relativa all'edificio centrato
+            const interior = this.game.map;
+            const buildingPixelWidth = interior.width * CONFIG.TILE_SIZE;
+            const buildingPixelHeight = interior.height * CONFIG.TILE_SIZE;
+            const offsetX = (CONFIG.CANVAS_WIDTH - buildingPixelWidth) / 2;
+            const offsetY = (CONFIG.CANVAS_HEIGHT - buildingPixelHeight) / 2;
+            
+            screenPos = {
+                x: offsetX + this.x - (interior.width * CONFIG.TILE_SIZE) / 2 + (interior.width * CONFIG.TILE_SIZE) / 2,
+                y: offsetY + this.y - (interior.height * CONFIG.TILE_SIZE) / 2 + (interior.height * CONFIG.TILE_SIZE) / 2
+            };
+        } else {
+            screenPos = camera.worldToScreen(this.x, this.y);
+        }
         
         // Ombra
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';

@@ -446,7 +446,7 @@ window.IntroManager = class IntroManager {
             boyCtx.drawImage(
                 boyImg, 
                 0, 0, frameWidth, frameHeight,
-                8, 8, 48, 48
+                0, 0, 64, 64
             );
             
             const boySprite = document.getElementById('boy-sprite');
@@ -479,7 +479,7 @@ window.IntroManager = class IntroManager {
             girlCtx.drawImage(
                 girlImg, 
                 0, 0, frameWidth, frameHeight,
-                8, 8, 48, 48
+                0, 0, 64, 64
             );
             
             const girlSprite = document.getElementById('girl-sprite');
@@ -520,7 +520,21 @@ window.IntroManager = class IntroManager {
                 this.updateGenderSelection();
             }
         };
-        
+
+        this.clickHandler = (e) => {
+            if (!this.isActive) return;
+            e.preventDefault();
+            
+            if (this.currentStep === 'gender') {
+                // La gestione del click per i gender è già presente
+                return;
+            } else {
+                // Tratta il click come SPACE per il dialogo
+                this.handleSpacePress();
+            }
+        };
+
+        document.addEventListener('click', this.clickHandler);        
         document.addEventListener('keydown', this.keydownHandler);
         this.setupGenderClickListeners();
     }
@@ -865,6 +879,10 @@ window.IntroManager = class IntroManager {
         
         if (this.keydownHandler) {
             document.removeEventListener('keydown', this.keydownHandler);
+        }
+
+        if (this.clickHandler) {
+            document.removeEventListener('click', this.clickHandler);
         }
         
         this.overlay.style.transition = 'opacity 1s ease-out';

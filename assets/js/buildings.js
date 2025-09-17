@@ -21,11 +21,19 @@ window.Buildings = class Buildings {
     
     interact() {
         if (this.nearBuilding) {
-            return {
-                type: this.nearBuilding.type,
-                message: CONFIG.DIALOGS[this.nearBuilding.type],
-                building: this.nearBuilding
-            };
+            if (this.nearBuilding.hasInterior) {
+                return {
+                    type: 'enter_building',
+                    building: this.nearBuilding,
+                    message: `Premi INVIO per entrare in ${this.nearBuilding.name}`
+                };
+            } else {
+                return {
+                    type: this.nearBuilding.type,
+                    message: CONFIG.DIALOGS[this.nearBuilding.type],
+                    building: this.nearBuilding
+                };
+            }
         }
         return null;
     }

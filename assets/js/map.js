@@ -7,17 +7,45 @@ window.GameMap = class GameMap {
     
     generateMap() {
         this.tiles = [];
+        
+        // Genera base con più varietà
         for (let y = 0; y < CONFIG.MAP_HEIGHT; y++) {
             this.tiles[y] = [];
             for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
-                this.tiles[y][x] = Math.random() > 0.6 ? 'dark_grass' : 'grass';
+                const rand = Math.random();
+                
+                // Zone diverse per varietà visiva
+                if (y < 5 || y > CONFIG.MAP_HEIGHT - 5) {
+                    this.tiles[y][x] = rand > 0.7 ? 'dark_grass' : 'grass';
+                } else if (x < 5 || x > CONFIG.MAP_WIDTH - 5) {
+                    this.tiles[y][x] = rand > 0.6 ? 'sand' : 'grass';
+                } else {
+                    this.tiles[y][x] = rand > 0.65 ? 'dark_grass' : 'grass';
+                }
             }
         }
         
         this.createPaths();
+        this.createWaterFeatures();
         this.generateDecorations();
     }
     
+    createWaterFeatures() {
+        // Piccolo lago nell'angolo
+        for (let y = 35; y < 42; y++) {
+            for (let x = 5; x < 12; x++) {
+                if (this.isValidTile(x, y)) {
+                    this.tiles[y][x] = 'water';
+                }
+            }
+        }
+        
+        // Ponte sul lago
+        for (let x = 8; x < 10; x++) {
+            this.tiles[38][x] = 'bridge';
+        }
+    }
+
     createPaths() {
         for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
             this.tiles[15][x] = 'path';

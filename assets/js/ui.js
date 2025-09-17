@@ -59,10 +59,41 @@ window.UI = class UI {
     updateMinimap(player, camera, map) {
         this.minimapCtx.clearRect(0, 0, this.minimap.width, this.minimap.height);
         
+        // Controlla se siamo in un interno
+        if (map.width && map.height) {
+            // Siamo in un interno
+            const scaleX = this.minimap.width / (map.width * CONFIG.TILE_SIZE);
+            const scaleY = this.minimap.height / (map.height * CONFIG.TILE_SIZE);
+            
+            for (let y = 0; y < map.height; y++) {
+                for (let x = 0; x < map.width; x++) {
+                    this.minimapCtx.fillStyle = '#666';
+                    this.minimapCtx.fillRect(
+                        x * CONFIG.TILE_SIZE * scaleX,
+                        y * CONFIG.TILE_SIZE * scaleY,
+                        CONFIG.TILE_SIZE * scaleX,
+                        CONFIG.TILE_SIZE * scaleY
+                    );
+                }
+            }
+            
+            // Player nell'interno
+            this.minimapCtx.fillStyle = '#ff0000';
+            this.minimapCtx.beginPath();
+            this.minimapCtx.arc(
+                player.x * scaleX,
+                player.y * scaleY,
+                3, 0, Math.PI * 2
+            );
+            this.minimapCtx.fill();
+            
+            return;
+        }
+        
+        // Codice originale per la mappa esterna
         const scaleX = this.minimap.width / (CONFIG.MAP_WIDTH * CONFIG.TILE_SIZE);
         const scaleY = this.minimap.height / (CONFIG.MAP_HEIGHT * CONFIG.TILE_SIZE);
         
-        // Disegna mappa
         for (let y = 0; y < CONFIG.MAP_HEIGHT; y++) {
             for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
                 const tile = map.tiles[y][x];
@@ -76,7 +107,6 @@ window.UI = class UI {
             }
         }
         
-        // Disegna edifici
         CONFIG.BUILDINGS.forEach(building => {
             this.minimapCtx.fillStyle = building.color;
             this.minimapCtx.fillRect(
@@ -87,7 +117,6 @@ window.UI = class UI {
             );
         });
         
-        // Disegna player
         this.minimapCtx.fillStyle = '#ff0000';
         this.minimapCtx.beginPath();
         this.minimapCtx.arc(
@@ -97,7 +126,6 @@ window.UI = class UI {
         );
         this.minimapCtx.fill();
         
-        // Disegna viewport camera
         this.minimapCtx.strokeStyle = '#fff';
         this.minimapCtx.lineWidth = 1;
         this.minimapCtx.strokeRect(

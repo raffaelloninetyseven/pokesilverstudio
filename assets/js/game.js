@@ -15,6 +15,7 @@ window.Game = class Game {
         this.buildings = new Buildings();
         this.ui = new UI();
         this.spriteManager = new SpriteManager();
+        this.interiorManager = new InteriorManager(this);
         
         this.lastTime = 0;
         this.deltaTime = 0;
@@ -34,20 +35,22 @@ window.Game = class Game {
     
     updateCanvasSize() {
         const devicePixelRatio = window.devicePixelRatio || 1;
-        const canvasWidth = window.innerWidth * devicePixelRatio;
-        const canvasHeight = window.innerHeight * devicePixelRatio;
         
-        this.canvas.width = canvasWidth;
-        this.canvas.height = canvasHeight;
+        // Forza le dimensioni del viewport
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
         
-        this.canvas.style.width = window.innerWidth + 'px';
-        this.canvas.style.height = window.innerHeight + 'px';
+        this.canvas.width = viewportWidth * devicePixelRatio;
+        this.canvas.height = viewportHeight * devicePixelRatio;
+        
+        this.canvas.style.width = viewportWidth + 'px';
+        this.canvas.style.height = viewportHeight + 'px';
         
         this.ctx.scale(devicePixelRatio, devicePixelRatio);
         this.ctx.imageSmoothingEnabled = false;
         
-        CONFIG.CANVAS_WIDTH = window.innerWidth;
-        CONFIG.CANVAS_HEIGHT = window.innerHeight;
+        CONFIG.CANVAS_WIDTH = viewportWidth;
+        CONFIG.CANVAS_HEIGHT = viewportHeight;
     }
     
     handleResize() {
@@ -107,14 +110,23 @@ window.Game = class Game {
         this.camera.follow(this.player);
         this.buildings.update(this.player);
         
-        if (this.inputManager.wasPressed('Space')) {
+        if (this.inputManager.wasPressed('Space') || this.inputManager.wasPressed('Enter')) {
             const interaction = this.buildings.interact();
             if (interaction) {
-                this.ui.showDialog(interaction.message);
+                if (interaction.type === 'enter_building') {
+                    this.interiorManager.enterBuilding(interaction.building);
+                } else {
+                    this.ui.showDialog(interaction.message);
+                }
             }
         }
         
-        if (this.inputManager.wasPressed('Escape')) {
+        // Gestione uscita dagli interni
+        if (this.interiorManager.currentInterior && this.inputManager.wasPressed('Escape')) {
+            this.interiorManager.exitBuilding();
+        }
+        
+        if (this.inputManager.wasPressed('Escape') && !this.interiorManager.currentInterior) {
             this.ui.toggleMenu();
         }
         

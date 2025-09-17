@@ -1,18 +1,32 @@
 const CONFIG = {
     TILE_SIZE: 32,
-    MAP_WIDTH: 40,
-    MAP_HEIGHT: 30,
+    MAP_WIDTH: 60,  // Mappa più grande
+    MAP_HEIGHT: 45,
     CANVAS_WIDTH: 800,
     CANVAS_HEIGHT: 600,
     PLAYER_SPEED: 2,
     ANIMATION_SPEED: 0.15,
-    PLAYER_GENDER: 'male', // Verrà impostato durante l'intro
+    PLAYER_GENDER: 'male',
+    
+    // Nuovi tipi di tile per varietà
+    TILE_TYPES: {
+        GRASS: 'grass',
+        DARK_GRASS: 'dark_grass',
+        PATH: 'path',
+        WATER: 'water',
+        SAND: 'sand',
+        STONE: 'stone',
+        BRIDGE: 'bridge'
+    },
     
     COLORS: {
         GRASS: '#4a7c47',
         DARK_GRASS: '#3a6b37',
         PATH: '#d4b896',
         WATER: '#4a90e2',
+        SAND: '#f4e4bc',
+        STONE: '#8c8c8c',
+        BRIDGE: '#8b4513',
         BUILDING_ROOF: '#8b4513',
         BUILDING_WALL: '#deb887',
         TREE: '#2d5016',
@@ -22,41 +36,50 @@ const CONFIG = {
         ROCK: '#696969'
     },
     
+    // Edifici ridisegnati con interni accessibili
     BUILDINGS: [
         {
-            x: 15, y: 8, width: 6, height: 5,
+            x: 25, y: 12, width: 8, height: 6,
             type: 'projects',
-            name: 'Centro Progetti',
-            entrance: { x: 18, y: 13 },
-            color: '#ff6b6b'
+            name: 'Centro Sviluppo',
+            entrance: { x: 28, y: 18 },
+            color: '#ff6b6b',
+            hasInterior: true,
+            interiorMap: 'projects_interior'
         },
         {
-            x: 8, y: 15, width: 4, height: 4,
+            x: 12, y: 20, width: 6, height: 5,
             type: 'skills',
-            name: 'Accademia Skills',
-            entrance: { x: 10, y: 19 },
-            color: '#4ecdc4'
+            name: 'Laboratorio Skills',
+            entrance: { x: 15, y: 25 },
+            color: '#4ecdc4',
+            hasInterior: true,
+            interiorMap: 'skills_interior'
         },
         {
-            x: 25, y: 12, width: 5, height: 4,
+            x: 40, y: 15, width: 7, height: 6,
             type: 'about',
-            name: 'Casa Personale',
-            entrance: { x: 27, y: 16 },
-            color: '#45b7d1'
+            name: 'Studio Personale',
+            entrance: { x: 43, y: 21 },
+            color: '#45b7d1',
+            hasInterior: true,
+            interiorMap: 'about_interior'
         },
         {
-            x: 5, y: 5, width: 4, height: 3,
+            x: 8, y: 8, width: 5, height: 4,
             type: 'contact',
             name: 'Ufficio Contatti',
-            entrance: { x: 7, y: 8 },
-            color: '#96ceb4'
+            entrance: { x: 10, y: 12 },
+            color: '#96ceb4',
+            hasInterior: true,
+            interiorMap: 'contact_interior'
         }
     ],
     
     DIALOGS: {
-        projects: "Benvenuto nel Centro Progetti di SilverStudio!\n\nQui puoi vedere tutti i miei lavori più importanti: applicazioni web innovative, giochi interattivi, API scalabili e molto altro. Ogni progetto racconta una storia di creatività e problem-solving!",
-        skills: "Accademia Skills di SilverStudio!\n\nQui trovi tutte le mie competenze tecniche in continua evoluzione: JavaScript, React, Node.js, Python, database avanzati e tecnologie cloud. L'apprendimento non si ferma mai!",
-        about: "Casa Personale di SilverStudio!\n\nScopri chi sono, la mia storia e il mio percorso nel mondo dello sviluppo. Dalle prime righe di codice fino ai progetti più ambiziosi. Benvenuto nel mio universo creativo!",
-        contact: "Ufficio Contatti di SilverStudio!\n\nVuoi collaborare? Hai un progetto in mente? Sei nel posto giusto! Sono sempre aperto a nuove opportunità, sfide interessanti e partnership creative. Contattiamoci!"
+        projects: "Benvenuto nel Centro Sviluppo!\n\nQui trovi tutti i miei progetti: applicazioni web, API, sistemi complessi e soluzioni innovative. Ogni progetto rappresenta una sfida superata!",
+        skills: "Laboratorio Skills!\n\nQui sviluppo e perfeziono le mie competenze: JavaScript, React, Node.js, Python, cloud computing e molto altro. L'innovazione non si ferma mai!",
+        about: "Studio Personale!\n\nScopri la mia storia, il mio percorso professionale e la passione che mi guida nel mondo dello sviluppo. Benvenuto nel mio universo creativo!",
+        contact: "Ufficio Contatti!\n\nHai un progetto? Cerchi collaborazioni? Questo è il posto giusto! Sono sempre aperto a nuove sfide e opportunità interessanti."
     }
 };
