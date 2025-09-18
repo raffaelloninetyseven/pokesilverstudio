@@ -2,15 +2,20 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SilverStudio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, orientation=landscape">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SilverStudio Portfolio Game</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/ui.css">
+    <link rel="stylesheet" href="assets/css/mobile.css">
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <canvas id="gameCanvas"></canvas>
         
+        <!-- UI del gioco -->
         <div id="ui">
             <div id="dialogBox" class="hidden">
                 <div class="dialog-content"></div>
@@ -29,9 +34,37 @@
                 <canvas id="minimapCanvas" width="120" height="90"></canvas>
             </div>
         </div>
+
+        <!-- Controlli touch per mobile -->
+        <div id="mobileControls">
+            <!-- Joystick virtuale -->
+            <div id="virtualJoystick">
+                <div id="joystickBase"></div>
+                <div id="joystickKnob"></div>
+            </div>
+            
+            <!-- Pulsanti azione -->
+            <div id="actionButtons">
+                <button id="interactButton" class="action-btn">
+                    <span>SPAZIO</span>
+                </button>
+                <button id="menuButton" class="action-btn">
+                    <span>MENU</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Overlay rotazione schermo -->
+        <div id="rotateOverlay">
+            <div id="rotateMessage">
+                <div id="rotateIcon">📱</div>
+                <h2>Ruota il dispositivo</h2>
+                <p>Questo sito funziona meglio in modalità orizzontale</p>
+            </div>
+        </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Script del gioco -->
     <script src="assets/js/config.js"></script>
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/spriteManager.js"></script>
@@ -45,6 +78,7 @@
     <script src="assets/js/mainMenu.js"></script>
     <script src="assets/js/intro.js"></script>
     <script src="assets/js/game.js"></script>
+    <script src="assets/js/mobileControls.js"></script>
     <script src="assets/js/main.js"></script>
 </body>
 </html>

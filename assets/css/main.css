@@ -4,12 +4,17 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    position: fixed;
 }
 
 body {
@@ -18,6 +23,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    touch-action: none;
 }
 
 #gameContainer {
@@ -29,11 +35,68 @@ body {
     background: #000;
     overflow: hidden;
     image-rendering: pixelated;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 canvas {
     display: block;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    touch-action: none;
+}
+
+#gameCanvas {
     width: 100%;
     height: 100%;
-    image-rendering: pixelated;
+    object-fit: contain;
+    background: #000;
+}
+
+/* Responsive canvas */
+@media (orientation: landscape) {
+    #gameCanvas {
+        width: 100vw;
+        height: 100vh;
+    }
+}
+
+@media (orientation: portrait) {
+    #gameCanvas {
+        width: 100vh;
+        height: 100vw;
+        transform: rotate(90deg);
+    }
+}
+
+/* Prevent text selection and zoom */
+* {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Disable zoom on inputs */
+input, select, textarea {
+    font-size: 16px;
+}
+
+/* Prevent context menu on long press */
+* {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+}
+
+/* Smooth performance */
+#gameContainer, #gameCanvas {
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
