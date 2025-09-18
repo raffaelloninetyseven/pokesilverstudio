@@ -50,11 +50,11 @@ class MobileControls {
         const controls = document.getElementById('mobileControls');
         if (controls) {
             controls.classList.add('intro-mode');
-            controls.classList.add('active');
+            controls.classList.remove('active'); // Nasconde i controlli nell'intro
         }
         
         this.orientationHandler.allowAnyOrientation();
-        console.log('Switched to intro mode');
+        console.log('Switched to intro mode - controls hidden');
     }
     
     setGameMode() {
@@ -64,11 +64,11 @@ class MobileControls {
         const controls = document.getElementById('mobileControls');
         if (controls) {
             controls.classList.remove('intro-mode');
-            controls.classList.add('active');
+            controls.classList.add('active'); // Mostra i controlli nel gioco
         }
         
         this.orientationHandler.requireLandscape();
-        console.log('Switched to game mode');
+        console.log('Switched to game mode - controls visible');
     }
     
     setupControls() {
@@ -300,16 +300,27 @@ class MobileControls {
     }
     
     releaseButton(key) {
-        // Simula keyPressed per compatibilità
+        console.log('Button released:', key, 'Current mode:', this.currentMode);
+        
+        // Simula keyPressed per compatibilità con il sistema esistente
         if (key === 'space') {
             this.inputManager.keyPressed['Space'] = true;
             this.inputManager.keyPressed['Enter'] = true;
+            console.log('Space/Enter key simulated');
         } else if (key === 'escape') {
             this.inputManager.keyPressed['Escape'] = true;
+            console.log('Escape key simulated');
         }
         
+        // Reset del tasto virtuale dopo un breve delay
         setTimeout(() => {
             this.virtualKeys[key] = false;
+            if (key === 'space') {
+                this.inputManager.keyPressed['Space'] = false;
+                this.inputManager.keyPressed['Enter'] = false;
+            } else if (key === 'escape') {
+                this.inputManager.keyPressed['Escape'] = false;
+            }
         }, 100);
     }
     

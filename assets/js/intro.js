@@ -109,7 +109,7 @@ window.IntroManager = class IntroManager {
         this.overlay.innerHTML = `
             <div class="intro-container">
                 <div class="prof-section">
-                    <canvas id="prof-canvas" width="400" height="600"></canvas>
+                    <canvas id="prof-canvas" width="512" height="768"></canvas>
                 </div>
                 
                 <div class="dialogue-section">
@@ -186,51 +186,47 @@ window.IntroManager = class IntroManager {
             }
             
             .intro-container {
-                width: 95vw;
-                height: 95vh;
-                max-width: 1200px;
-                max-height: 800px;
+                width: 90vw;
+                height: 90vh;
+                max-width: 1400px;
+                max-height: 900px;
                 background: rgba(20, 20, 40, 0.95);
                 border: 4px solid #4ecdc4;
                 display: flex;
-                flex-direction: column;
                 position: relative;
                 backdrop-filter: blur(10px);
                 box-shadow: 0 0 50px rgba(78, 205, 196, 0.3);
-                border-radius: 10px;
                 overflow: hidden;
             }
             
             .prof-section {
-                flex: 0 0 40%;
+                width: 40%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 background: linear-gradient(135deg, rgba(30, 60, 114, 0.2), rgba(42, 82, 152, 0.2));
-                border-bottom: 3px solid #4ecdc4;
+                border-right: 3px solid #4ecdc4;
                 position: relative;
-                padding: 15px;
-                min-height: 200px;
+                padding: 20px;
             }
             
             #prof-canvas {
                 image-rendering: pixelated;
                 width: 100%;
                 height: 100%;
-                max-width: 300px;
+                max-width: 100%;
                 max-height: 100%;
                 object-fit: contain;
                 filter: drop-shadow(0 0 30px rgba(78, 205, 196, 0.4));
             }
             
             .dialogue-section {
-                flex: 1;
-                padding: clamp(15px, 4vw, 30px);
+                width: 60%;
+                padding: clamp(20px, 4vw, 50px);
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 position: relative;
-                min-height: 150px;
             }
             
             .dialogue-box {
@@ -265,6 +261,20 @@ window.IntroManager = class IntroManager {
                 font-size: clamp(6px, 1.5vw, 9px);
                 color: #4ecdc4;
                 animation: glow 2s infinite ease-in-out;
+            }
+            
+            /* Desktop - Testo specifico */
+            @media (hover: hover) and (pointer: fine) {
+                .continue-hint::after {
+                    content: " - SPAZIO per continuare";
+                }
+            }
+            
+            /* Mobile - Testo specifico */
+            @media (hover: none) and (pointer: coarse) {
+                .continue-hint::after {
+                    content: "";
+                }
             }
             
             @keyframes glow {
@@ -373,8 +383,72 @@ window.IntroManager = class IntroManager {
                 opacity: 0.8;
             }
             
-            /* Mobile specifico */
-            @media (orientation: portrait) {
+            /* DESKTOP - Layout orizzontale classico */
+            @media (hover: hover) and (pointer: fine) {
+                .intro-container {
+                    width: 90vw;
+                    height: 90vh;
+                    max-width: 1400px;
+                    max-height: 900px;
+                    flex-direction: row;
+                    border-radius: 0;
+                }
+                
+                .prof-section {
+                    width: 40%;
+                    border-right: 3px solid #4ecdc4;
+                    border-bottom: none;
+                    padding: 20px;
+                }
+                
+                .dialogue-section {
+                    width: 60%;
+                    padding: clamp(20px, 4vw, 50px);
+                }
+                
+                .continue-hint {
+                    font-size: clamp(6px, 1.5vw, 10px);
+                }
+            }
+            
+            /* MOBILE - Layout verticale compatto */
+            @media (hover: none) and (pointer: coarse) {
+                .intro-container {
+                    width: 95vw;
+                    height: 95vh;
+                    max-width: 1200px;
+                    max-height: 800px;
+                    flex-direction: column;
+                    border-radius: 10px;
+                }
+                
+                .prof-section {
+                    flex: 0 0 40%;
+                    width: 100%;
+                    border-right: none;
+                    border-bottom: 3px solid #4ecdc4;
+                    padding: 15px;
+                    min-height: 200px;
+                }
+                
+                .dialogue-section {
+                    flex: 1;
+                    width: 100%;
+                    padding: clamp(15px, 4vw, 30px);
+                    min-height: 150px;
+                }
+                
+                #prof-canvas {
+                    max-width: 300px;
+                }
+                
+                .continue-hint {
+                    font-size: clamp(8px, 2vw, 12px);
+                }
+            }
+            
+            /* Mobile specifico - Portrait */
+            @media (hover: none) and (pointer: coarse) and (orientation: portrait) {
                 .intro-container {
                     width: 98vw;
                     height: 98vh;
@@ -403,20 +477,24 @@ window.IntroManager = class IntroManager {
                 }
             }
             
-            @media (orientation: landscape) and (max-height: 500px) {
+            /* Mobile Landscape - Più simile a desktop ma compatto */
+            @media (hover: none) and (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
                 .intro-container {
                     flex-direction: row;
                     height: 98vh;
+                    width: 98vw;
                 }
                 
                 .prof-section {
-                    flex: 0 0 40%;
+                    width: 40%;
+                    flex: none;
                     border-right: 3px solid #4ecdc4;
                     border-bottom: none;
                 }
                 
                 .dialogue-section {
-                    flex: 1;
+                    width: 60%;
+                    flex: none;
                     padding: 15px;
                 }
                 
