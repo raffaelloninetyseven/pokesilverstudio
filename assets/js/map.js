@@ -294,6 +294,14 @@ window.GameMap = class GameMap {
             return false;
         }
         
+        for (let tileY = top; tileY <= bottom; tileY++) {
+            for (let tileX = left; tileX <= right; tileX++) {
+                if (this.tiles[tileY][tileX] === 'water') {
+                    return false; // Non può camminare sull'acqua
+                }
+            }
+        }
+
         for (let building of CONFIG.BUILDINGS) {
             if (Utils.rectCollision(
                 x - halfSize, y - halfSize, size, size,

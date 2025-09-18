@@ -5,6 +5,7 @@ const CONFIG = {
     CANVAS_WIDTH: 800,
     CANVAS_HEIGHT: 600,
     PLAYER_SPEED: 3,
+    PLAYER_RUN_SPEED: 8,
     ANIMATION_SPEED: 0.15,
     PLAYER_GENDER: 'male',
     

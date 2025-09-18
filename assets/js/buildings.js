@@ -13,7 +13,7 @@ window.Buildings = class Buildings {
             const entrance = building.entrance;
             const distance = Utils.distance(playerTile.x, playerTile.y, entrance.x, entrance.y);
             
-            if (distance <= 1.5) {
+            if (distance <= 0.7) {
                 this.nearBuilding = building;
                 break;
             }

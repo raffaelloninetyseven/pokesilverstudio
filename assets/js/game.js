@@ -84,8 +84,7 @@ window.Game = class Game {
         if (this.camera) {
             this.camera.canvasWidth = CONFIG.CANVAS_WIDTH;
             this.camera.canvasHeight = CONFIG.CANVAS_HEIGHT;
-            this.camera.maxX = CONFIG.MAP_WIDTH * CONFIG.TILE_SIZE - CONFIG.CANVAS_WIDTH;
-            this.camera.maxY = CONFIG.MAP_HEIGHT * CONFIG.TILE_SIZE - CONFIG.CANVAS_HEIGHT;
+            this.camera.updateBounds();
         }
     }
     

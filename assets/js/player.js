@@ -13,6 +13,8 @@ window.Player = class Player {
         // Proprietà fisiche
         this.size = 20;
         this.walkSpeed = CONFIG.PLAYER_SPEED;
+        this.runSpeed = CONFIG.PLAYER_RUN_SPEED;
+        this.isRunning = false;
     }
     
     update(inputManager, map) {
@@ -21,10 +23,15 @@ window.Player = class Player {
         if (movement.dx !== 0 || movement.dy !== 0) {
             this.isMoving = true;
             this.updateDirection(movement);
+            
+            // Controlla se sta correndo
+            this.isRunning = inputManager.isPressed('Space');
+            
             this.move(movement.dx, movement.dy, map);
             this.updateAnimation();
         } else {
             this.isMoving = false;
+            this.isRunning = false;
             this.animationFrame = 0;
             this.animationTimer = 0;
         }
@@ -40,8 +47,10 @@ window.Player = class Player {
     }
     
     move(dx, dy, map) {
-        const newX = this.x + dx * this.walkSpeed;
-        const newY = this.y + dy * this.walkSpeed;
+        const currentSpeed = this.isRunning ? this.runSpeed : this.walkSpeed;
+        
+        const newX = this.x + dx * currentSpeed;
+        const newY = this.y + dy * currentSpeed;
         
         // Controlla se siamo in un interno
         const game = window.game;
@@ -89,7 +98,9 @@ window.Player = class Player {
     }
     
     updateAnimation() {
-        this.animationTimer += CONFIG.ANIMATION_SPEED;
+        const animSpeed = this.isRunning ? CONFIG.ANIMATION_SPEED * 1.5 : CONFIG.ANIMATION_SPEED;
+        
+        this.animationTimer += animSpeed;
         if (this.animationTimer >= 1) {
             this.animationFrame = (this.animationFrame + 1) % 4;
             this.animationTimer = 0;

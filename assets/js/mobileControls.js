@@ -21,7 +21,8 @@ class MobileControls {
             left: false,
             right: false,
             space: false,
-            escape: false
+            escape: false,
+            shift: false
         };
         
         this.orientationHandler = new OrientationManager();
@@ -267,12 +268,19 @@ class MobileControls {
     
     updateVirtualKeys() {
         const threshold = 15;
+        const runThreshold = 30; // Soglia più alta per correre
         
         // Reset
         this.virtualKeys.up = false;
         this.virtualKeys.down = false;
         this.virtualKeys.left = false;
         this.virtualKeys.right = false;
+        
+        // Controlla se sta spingendo forte il joystick (corsa)
+        const distance = Math.sqrt(this.joystick.currentPos.x * this.joystick.currentPos.x + 
+                                this.joystick.currentPos.y * this.joystick.currentPos.y);
+        
+        this.virtualKeys.shift = distance > runThreshold;
         
         // Solo se il movimento è significativo
         if (Math.abs(this.joystick.currentPos.x) > threshold || Math.abs(this.joystick.currentPos.y) > threshold) {
@@ -285,6 +293,10 @@ class MobileControls {
     
     pressButton(key) {
         this.virtualKeys[key] = true;
+
+        if (key === 'shift') {
+            this.virtualKeys.shift = true;
+        }
         
         // Feedback visivo
         const button = key === 'space' ? 
@@ -381,7 +393,9 @@ class MobileControls {
             'ArrowLeft': this.virtualKeys.left,
             'ArrowRight': this.virtualKeys.right,
             'Space': this.virtualKeys.space,
-            'Escape': this.virtualKeys.escape
+            'Escape': this.virtualKeys.escape,
+            'ShiftLeft': this.virtualKeys.shift,
+            'ShiftRight': this.virtualKeys.shift
         };
         
         return keyMap[key] || false;

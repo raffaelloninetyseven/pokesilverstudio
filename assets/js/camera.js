@@ -11,8 +11,11 @@ window.Camera = class Camera {
     }
     
     updateBounds() {
-        this.maxX = Math.max(0, CONFIG.MAP_WIDTH * CONFIG.TILE_SIZE - this.canvasWidth);
-        this.maxY = Math.max(0, CONFIG.MAP_HEIGHT * CONFIG.TILE_SIZE - this.canvasHeight);
+        this.maxX = (CONFIG.MAP_WIDTH * CONFIG.TILE_SIZE) - this.canvasWidth;
+        this.maxY = (CONFIG.MAP_HEIGHT * CONFIG.TILE_SIZE) - this.canvasHeight;
+        
+        this.maxX = Math.max(0, this.maxX);
+        this.maxY = Math.max(0, this.maxY);
     }
     
     follow(target) {
