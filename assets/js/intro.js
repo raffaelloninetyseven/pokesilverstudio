@@ -1,3 +1,5 @@
+// Fix per assets/js/intro.js - Ottimizzato per mobile
+
 window.IntroManager = class IntroManager {
     constructor(game) {
         this.game = game;
@@ -28,13 +30,13 @@ window.IntroManager = class IntroManager {
         this.animationTime = 0;
         this.generateStars();
         
-        this.boyImg = null;
-        this.girlImg = null;
-        this.boyLoaded = false;
-        this.girlLoaded = false;
-        
         this.hideMinimap();
         this.loadProfSpritesheet();
+        
+        // Attiva modalità intro per mobile
+        if (window.mobileControls) {
+            window.mobileControls.setIntroMode();
+        }
         
         this.dialogues = {
             welcome: [
@@ -49,8 +51,8 @@ window.IntroManager = class IntroManager {
             ],
             confirmation: [
                 `Perfetto! Ora sei pronto per iniziare la tua avventura.`,
-                "Usa WASD o le frecce per muoverti nella cittadina.",
-                "Avvicinati agli edifici e premi SPAZIO per interagire.",
+                "Usa i controlli per muoverti nella cittadina.",
+                "Avvicinati agli edifici e premi il pulsante di interazione.",
                 "Buona esplorazione nel mondo di SilverStudio!"
             ]
         };
@@ -107,14 +109,14 @@ window.IntroManager = class IntroManager {
         this.overlay.innerHTML = `
             <div class="intro-container">
                 <div class="prof-section">
-                    <canvas id="prof-canvas" width="512" height="768"></canvas>
+                    <canvas id="prof-canvas" width="400" height="600"></canvas>
                 </div>
                 
                 <div class="dialogue-section">
                     <div class="dialogue-box">
                         <div class="dialogue-text" id="dialogue-text"></div>
                         <div class="dialogue-controls">
-                            <span class="continue-hint" id="continue-hint">SPAZIO - Continua</span>
+                            <span class="continue-hint" id="continue-hint">Tocca per continuare</span>
                         </div>
                     </div>
                 </div>
@@ -132,7 +134,7 @@ window.IntroManager = class IntroManager {
                         </div>
                     </div>
                     <div class="gender-controls">
-                        <span class="control-hint">FRECCE/AD - Naviga   SPAZIO - Seleziona</span>
+                        <span class="control-hint">Tocca per selezionare</span>
                     </div>
                 </div>
             </div>
@@ -146,13 +148,14 @@ window.IntroManager = class IntroManager {
                 left: 0;
                 width: 100vw;
                 height: 100vh;
-                background: #000;
+                background: linear-gradient(135deg, #000 0%, #1e3c72 50%, #2a5298 100%);
                 z-index: 1000;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 font-family: 'Press Start 2P', monospace;
                 overflow: hidden;
+                padding: 10px;
             }
             
             #intro-overlay::before {
@@ -183,73 +186,83 @@ window.IntroManager = class IntroManager {
             }
             
             .intro-container {
-                width: 90vw;
-                height: 90vh;
-                max-width: 1400px;
-                max-height: 900px;
+                width: 95vw;
+                height: 95vh;
+                max-width: 1200px;
+                max-height: 800px;
                 background: rgba(20, 20, 40, 0.95);
                 border: 4px solid #4ecdc4;
                 display: flex;
+                flex-direction: column;
                 position: relative;
                 backdrop-filter: blur(10px);
                 box-shadow: 0 0 50px rgba(78, 205, 196, 0.3);
+                border-radius: 10px;
+                overflow: hidden;
             }
             
             .prof-section {
-                width: 40%;
+                flex: 0 0 40%;
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 background: linear-gradient(135deg, rgba(30, 60, 114, 0.2), rgba(42, 82, 152, 0.2));
-                border-right: 3px solid #4ecdc4;
+                border-bottom: 3px solid #4ecdc4;
                 position: relative;
-                padding: 20px;
+                padding: 15px;
+                min-height: 200px;
             }
             
             #prof-canvas {
                 image-rendering: pixelated;
                 width: 100%;
                 height: 100%;
-                max-width: 100%;
+                max-width: 300px;
                 max-height: 100%;
                 object-fit: contain;
                 filter: drop-shadow(0 0 30px rgba(78, 205, 196, 0.4));
             }
             
             .dialogue-section {
-                width: 60%;
-                padding: clamp(20px, 4vw, 50px);
+                flex: 1;
+                padding: clamp(15px, 4vw, 30px);
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 position: relative;
+                min-height: 150px;
             }
             
             .dialogue-box {
                 background: rgba(255, 255, 255, 0.98);
                 border: 3px solid #4ecdc4;
-                padding: clamp(20px, 4vw, 40px);
-                min-height: clamp(120px, 20vh, 200px);
+                border-radius: 8px;
+                padding: clamp(15px, 4vw, 25px);
+                min-height: clamp(100px, 20vh, 150px);
                 position: relative;
                 box-shadow: 0 0 40px rgba(78, 205, 196, 0.3);
-                border-radius: 8px;
+                cursor: pointer;
+                user-select: none;
+                -webkit-user-select: none;
+                touch-action: manipulation;
             }
             
             .dialogue-text {
-                font-size: clamp(10px, 2.5vw, 16px);
-                line-height: 1.8;
+                font-size: clamp(10px, 2.5vw, 14px);
+                line-height: 1.6;
                 color: #1a1a1a;
-                min-height: clamp(60px, 12vh, 100px);
+                min-height: clamp(50px, 12vh, 80px);
+                margin-bottom: 20px;
             }
             
             .dialogue-controls {
                 position: absolute;
-                bottom: 15px;
-                right: 20px;
+                bottom: 10px;
+                right: 15px;
             }
             
             .continue-hint {
-                font-size: clamp(6px, 1.5vw, 10px);
+                font-size: clamp(6px, 1.5vw, 9px);
                 color: #4ecdc4;
                 animation: glow 2s infinite ease-in-out;
             }
@@ -264,15 +277,16 @@ window.IntroManager = class IntroManager {
                 bottom: 0;
                 left: 0;
                 right: 0;
-                padding: clamp(15px, 3vw, 40px);
+                padding: clamp(15px, 3vw, 25px);
                 text-align: center;
                 background: rgba(0, 0, 0, 0.95);
                 border-top: 3px solid #4ecdc4;
+                border-radius: 0 0 10px 10px;
             }
             
             .selection-title {
-                font-size: clamp(12px, 3vw, 20px);
-                margin-bottom: clamp(15px, 3vw, 30px);
+                font-size: clamp(12px, 3vw, 18px);
+                margin-bottom: clamp(15px, 3vw, 25px);
                 color: #4ecdc4;
                 text-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
             }
@@ -280,25 +294,30 @@ window.IntroManager = class IntroManager {
             .gender-options {
                 display: flex;
                 justify-content: center;
-                gap: clamp(30px, 6vw, 80px);
+                gap: clamp(20px, 6vw, 60px);
                 flex-wrap: wrap;
+                margin-bottom: 20px;
             }
             
             .gender-option {
                 background: rgba(30, 60, 114, 0.8);
                 border: 3px solid #4ecdc4;
-                padding: clamp(15px, 3vw, 25px);
+                border-radius: 8px;
+                padding: clamp(15px, 3vw, 20px);
                 cursor: pointer;
                 transition: all 0.3s ease;
-                min-width: clamp(80px, 12vw, 140px);
-                max-width: clamp(120px, 15vw, 180px);
-                border-radius: 8px;
+                min-width: clamp(100px, 15vw, 150px);
+                max-width: clamp(140px, 20vw, 180px);
+                touch-action: manipulation;
+                user-select: none;
+                -webkit-user-select: none;
             }
             
             .gender-option:hover,
-            .gender-option.keyboard-selected {
+            .gender-option.keyboard-selected,
+            .gender-option:active {
                 background: rgba(42, 82, 152, 0.9);
-                transform: translateY(-5px) scale(1.1);
+                transform: translateY(-5px) scale(1.05);
                 box-shadow: 0 10px 30px rgba(78, 205, 196, 0.4);
             }
             
@@ -310,9 +329,9 @@ window.IntroManager = class IntroManager {
             }
             
             .character-sprite {
-                font-size: clamp(20px, 4vw, 32px);
-                margin-bottom: clamp(8px, 1.5vw, 15px);
-                min-height: clamp(50px, 8vw, 70px);
+                font-size: clamp(24px, 5vw, 40px);
+                margin-bottom: clamp(8px, 2vw, 15px);
+                min-height: clamp(40px, 8vw, 60px);
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -323,8 +342,8 @@ window.IntroManager = class IntroManager {
                 border: 2px solid transparent;
                 transition: all 0.3s ease;
                 border-radius: 6px;
-                width: clamp(40px, 6vw, 64px);
-                height: clamp(40px, 6vw, 64px);
+                width: clamp(40px, 8vw, 64px);
+                height: clamp(40px, 8vw, 64px);
             }
             
             .gender-option.selected .character-sprite canvas {
@@ -333,8 +352,9 @@ window.IntroManager = class IntroManager {
             }
             
             .character-label {
-                font-size: clamp(8px, 2vw, 14px);
+                font-size: clamp(8px, 2vw, 12px);
                 color: #4ecdc4;
+                text-shadow: 0 1px 3px rgba(0,0,0,0.5);
             }
             
             .gender-option.selected .character-label {
@@ -343,7 +363,7 @@ window.IntroManager = class IntroManager {
             }
             
             .gender-controls {
-                margin-top: clamp(15px, 3vw, 25px);
+                margin-top: 15px;
                 text-align: center;
             }
             
@@ -353,63 +373,60 @@ window.IntroManager = class IntroManager {
                 opacity: 0.8;
             }
             
-            @media (max-width: 768px) {
+            /* Mobile specifico */
+            @media (orientation: portrait) {
                 .intro-container {
-                    width: 100vw;
-                    height: 100vh;
+                    width: 98vw;
+                    height: 98vh;
                     flex-direction: column;
-                    border: none;
                 }
                 
                 .prof-section {
-                    width: 100%;
-                    height: 45%;
-                    border-right: none;
-                    border-bottom: 3px solid #4ecdc4;
-                    padding: 10px;
-                }
-                
-                #prof-canvas {
-                    max-height: 90%;
+                    flex: 0 0 35%;
+                    min-height: 180px;
                 }
                 
                 .dialogue-section {
-                    width: 100%;
-                    height: 55%;
-                    padding: 15px;
+                    flex: 1;
+                    min-height: 120px;
                 }
                 
                 .gender-options {
-                    gap: 20px;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 15px;
                 }
                 
                 .gender-option {
-                    min-width: 100px;
-                    max-width: 130px;
-                    padding: 12px;
-                }
-                
-                .character-sprite canvas {
-                    width: 48px;
-                    height: 48px;
+                    width: 80%;
+                    max-width: 200px;
                 }
             }
             
-            @media (max-width: 480px) {
-                .prof-section {
-                    padding: 5px;
+            @media (orientation: landscape) and (max-height: 500px) {
+                .intro-container {
+                    flex-direction: row;
+                    height: 98vh;
                 }
                 
-                #prof-canvas {
-                    max-height: 85%;
+                .prof-section {
+                    flex: 0 0 40%;
+                    border-right: 3px solid #4ecdc4;
+                    border-bottom: none;
                 }
                 
                 .dialogue-section {
-                    padding: 10px;
+                    flex: 1;
+                    padding: 15px;
                 }
                 
-                .gender-selection {
-                    padding: 20px 10px;
+                .dialogue-text {
+                    font-size: clamp(8px, 2vw, 12px);
+                }
+                
+                .gender-options {
+                    flex-direction: row;
+                    gap: 20px;
                 }
             }
         `;
@@ -424,6 +441,79 @@ window.IntroManager = class IntroManager {
         this.setupEventListeners();
         this.loadCharacterSprites();
         this.startTypewriter();
+    }
+    
+    setupEventListeners() {
+        // Touch/click handlers per dialogue box
+        const dialogueBox = document.querySelector('.dialogue-box');
+        if (dialogueBox) {
+            dialogueBox.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.handleInteraction();
+            });
+            
+            dialogueBox.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this.handleInteraction();
+            });
+        }
+        
+        // Keyboard handler (per desktop)
+        this.keyHandler = (e) => {
+            if (!this.isActive) return;
+            
+            switch(e.code) {
+                case 'Space':
+                case 'Enter':
+                    e.preventDefault();
+                    if (this.currentStep === 'gender') {
+                        this.selectGender(this.selectedGenderIndex === 0 ? 'male' : 'female');
+                    } else {
+                        this.handleInteraction();
+                    }
+                    break;
+                    
+                case 'ArrowLeft':
+                case 'KeyA':
+                    if (this.currentStep === 'gender') {
+                        e.preventDefault();
+                        this.selectedGenderIndex = 0;
+                        this.updateGenderSelection();
+                    }
+                    break;
+                    
+                case 'ArrowRight':
+                case 'KeyD':
+                    if (this.currentStep === 'gender') {
+                        e.preventDefault();
+                        this.selectedGenderIndex = 1;
+                        this.updateGenderSelection();
+                    }
+                    break;
+            }
+        };
+        
+        document.addEventListener('keydown', this.keyHandler);
+        this.setupGenderClickListeners();
+    }
+    
+    handleInteraction() {
+        if (this.currentStep === 'gender' && !this.selectedGender) {
+            console.log('Waiting for gender selection...');
+            return;
+        }
+        
+        if (this.isTyping) {
+            this.skipTyping = true;
+            return;
+        }
+        
+        if (this.textIndex < this.currentDialogue.length - 1) {
+            this.textIndex++;
+            this.startTypewriter();
+        } else {
+            this.nextStep();
+        }
     }
     
     loadCharacterSprites() {
@@ -453,9 +543,6 @@ window.IntroManager = class IntroManager {
             if (boySprite) {
                 boySprite.innerHTML = '';
                 boySprite.appendChild(boyCanvas);
-                boyCanvas.dataset.spritesheet = boyImg.src;
-                boyCanvas.dataset.frameWidth = frameWidth;
-                boyCanvas.dataset.frameHeight = frameHeight;
             }
         };
         boyImg.onerror = () => {
@@ -486,9 +573,6 @@ window.IntroManager = class IntroManager {
             if (girlSprite) {
                 girlSprite.innerHTML = '';
                 girlSprite.appendChild(girlCanvas);
-                girlCanvas.dataset.spritesheet = girlImg.src;
-                girlCanvas.dataset.frameWidth = frameWidth;
-                girlCanvas.dataset.frameHeight = frameHeight;
             }
         };
         girlImg.onerror = () => {
@@ -497,162 +581,26 @@ window.IntroManager = class IntroManager {
         girlImg.src = 'assets/sprite/player/player_girl_down.png';
     }
     
-    setupEventListeners() {
-        this.keydownHandler = (e) => {
-            if (!this.isActive) return;
-            
-            console.log('Key pressed:', e.code, 'Current step:', this.currentStep, 'Is typing:', this.isTyping, 'Text index:', this.textIndex);
-            
-            if (e.code === 'Space') {
-                e.preventDefault();
-                if (this.currentStep === 'gender') {
-                    this.selectGender(this.selectedGenderIndex === 0 ? 'male' : 'female');
-                } else {
-                    this.handleSpacePress();
-                }
-            } else if (this.currentStep === 'gender' && (e.code === 'ArrowLeft' || e.code === 'KeyA')) {
-                e.preventDefault();
-                this.selectedGenderIndex = 0;
-                this.updateGenderSelection();
-            } else if (this.currentStep === 'gender' && (e.code === 'ArrowRight' || e.code === 'KeyD')) {
-                e.preventDefault();
-                this.selectedGenderIndex = 1;
-                this.updateGenderSelection();
-            }
-        };
-
-        this.clickHandler = (e) => {
-            if (!this.isActive) return;
-            e.preventDefault();
-            
-            if (this.currentStep === 'gender') {
-                // La gestione del click per i gender è già presente
-                return;
-            } else {
-                // Tratta il click come SPACE per il dialogo
-                this.handleSpacePress();
-            }
-        };
-
-        document.addEventListener('click', this.clickHandler);        
-        document.addEventListener('keydown', this.keydownHandler);
-        this.setupGenderClickListeners();
-    }
-    
     setupGenderClickListeners() {
         setTimeout(() => {
             const genderOptions = document.querySelectorAll('.gender-option');
-            console.log('Setting up gender listeners for', genderOptions.length, 'options');
             
             genderOptions.forEach((option, index) => {
-                const canvas = option.querySelector('canvas');
-                
-                option.addEventListener('mouseenter', () => {
-                    this.selectedGenderIndex = index;
-                    this.updateGenderSelection();
-                    this.startHoverAnimation(canvas);
-                });
-                
-                option.addEventListener('mouseleave', () => {
-                    this.stopHoverAnimation(canvas);
-                });
-                
                 option.addEventListener('click', (e) => {
                     e.preventDefault();
-                    console.log('Gender clicked:', option.dataset.gender, 'Current step:', this.currentStep);
+                    if (this.currentStep === 'gender') {
+                        this.selectGender(option.dataset.gender);
+                    }
+                });
+                
+                option.addEventListener('touchend', (e) => {
+                    e.preventDefault();
                     if (this.currentStep === 'gender') {
                         this.selectGender(option.dataset.gender);
                     }
                 });
             });
         }, 200);
-    }
-    
-    startHoverAnimation(canvas) {
-        if (!canvas || !canvas.dataset.spritesheet) return;
-        
-        this.stopHoverAnimation(canvas);
-        
-        const img = new Image();
-        img.onload = () => {
-            const ctx = canvas.getContext('2d');
-            const frameWidth = parseInt(canvas.dataset.frameWidth);
-            const frameHeight = parseInt(canvas.dataset.frameHeight);
-            let animationFrame = 0;
-            
-            canvas.animationInterval = setInterval(() => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(
-                    img,
-                    (animationFrame % 4) * frameWidth, 0, frameWidth, frameHeight,
-                    8, 8, 48, 48
-                );
-                animationFrame++;
-            }, 200);
-        };
-        img.src = canvas.dataset.spritesheet;
-    }
-    
-    stopHoverAnimation(canvas) {
-        if (!canvas || !canvas.dataset.spritesheet) return;
-        
-        if (canvas.animationInterval) {
-            clearInterval(canvas.animationInterval);
-            canvas.animationInterval = null;
-        }
-        
-        const img = new Image();
-        img.onload = () => {
-            const ctx = canvas.getContext('2d');
-            const frameWidth = parseInt(canvas.dataset.frameWidth);
-            const frameHeight = parseInt(canvas.dataset.frameHeight);
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(
-                img,
-                0, 0, frameWidth, frameHeight,
-                8, 8, 48, 48
-            );
-        };
-        img.src = canvas.dataset.spritesheet;
-    }
-    
-    updateGenderSelection() {
-        const genderOptions = document.querySelectorAll('.gender-option');
-        genderOptions.forEach((option, index) => {
-            const canvas = option.querySelector('canvas');
-            
-            if (index === this.selectedGenderIndex) {
-                option.classList.add('keyboard-selected');
-                this.startHoverAnimation(canvas);
-            } else {
-                option.classList.remove('keyboard-selected');
-                this.stopHoverAnimation(canvas);
-            }
-        });
-    }
-    
-    handleSpacePress() {
-        console.log('Space pressed - Current step:', this.currentStep, 'Text index:', this.textIndex, 'Is typing:', this.isTyping);
-        
-        if (this.isTyping) {
-            this.skipTyping = true;
-            return;
-        }
-        
-        if (this.currentStep === 'gender' && !this.selectedGender) {
-            console.log('Waiting for gender selection...');
-            return;
-        }
-        
-        if (this.textIndex < this.currentDialogue.length - 1) {
-            this.textIndex++;
-            console.log('Next dialogue:', this.textIndex, '/', this.currentDialogue.length - 1);
-            this.startTypewriter();
-        } else {
-            console.log('Going to next step from:', this.currentStep);
-            this.nextStep();
-        }
     }
     
     selectGender(gender) {
@@ -674,39 +622,41 @@ window.IntroManager = class IntroManager {
         }, 800);
     }
     
+    updateGenderSelection() {
+        const genderOptions = document.querySelectorAll('.gender-option');
+        genderOptions.forEach((option, index) => {
+            if (index === this.selectedGenderIndex) {
+                option.classList.add('keyboard-selected');
+            } else {
+                option.classList.remove('keyboard-selected');
+            }
+        });
+    }
+    
     nextStep() {
-        console.log('Next step called from:', this.currentStep);
-        
         switch(this.currentStep) {
             case 'welcome':
                 this.currentStep = 'gender';
                 this.currentDialogue = this.dialogues.gender;
                 this.textIndex = 0;
-                console.log('Switching to gender selection');
                 this.showGenderSelection();
                 this.startTypewriter();
                 break;
                 
             case 'gender':
                 if (!this.selectedGender) {
-                    console.log('No gender selected, waiting...');
                     return;
                 }
                 this.currentStep = 'confirmation';
                 this.currentDialogue = this.dialogues.confirmation;
                 this.textIndex = 0;
-                console.log('Switching to confirmation');
                 this.hideGenderSelection();
                 this.startTypewriter();
                 break;
                 
             case 'confirmation':
-                console.log('Ending intro');
                 this.endIntro();
                 break;
-                
-            default:
-                console.log('Unknown step:', this.currentStep);
         }
     }
     
@@ -714,7 +664,6 @@ window.IntroManager = class IntroManager {
         const genderSelection = document.getElementById('gender-selection');
         if (genderSelection) {
             genderSelection.style.display = 'block';
-            console.log('Gender selection shown');
             this.setupGenderClickListeners();
             setTimeout(() => {
                 this.updateGenderSelection();
@@ -726,23 +675,18 @@ window.IntroManager = class IntroManager {
         const genderSelection = document.getElementById('gender-selection');
         if (genderSelection) {
             genderSelection.style.display = 'none';
-            console.log('Gender selection hidden');
         }
     }
     
     startTypewriter() {
         const dialogueElement = document.getElementById('dialogue-text');
-        if (!dialogueElement) {
-            console.error('Dialogue element not found!');
-            return;
-        }
+        if (!dialogueElement) return;
         
         this.currentText = '';
         this.lastTextUpdate = Date.now();
         this.isTyping = true;
         this.skipTyping = false;
         
-        console.log('Starting typewriter for:', this.currentDialogue[this.textIndex]);
         this.typewriterEffect();
     }
     
@@ -759,7 +703,6 @@ window.IntroManager = class IntroManager {
             this.isTyping = false;
             this.skipTyping = false;
             dialogueElement.textContent = this.currentText;
-            console.log('Text skipped');
             return;
         }
         
@@ -771,7 +714,6 @@ window.IntroManager = class IntroManager {
                 this.lastTextUpdate = now;
             } else {
                 this.isTyping = false;
-                console.log('Typing completed');
             }
         }
         
@@ -836,18 +778,26 @@ window.IntroManager = class IntroManager {
         if (!this.profLoaded || !this.profSpritesheet.complete) {
             this.profCtx.clearRect(0, 0, this.profCanvas.width, this.profCanvas.height);
             
+            // Fallback - disegna Prof Silver stilizzato
             this.profCtx.fillStyle = '#1a1a1a';
             this.profCtx.fillRect(0, 0, this.profCanvas.width, this.profCanvas.height);
             
+            // Bordo
+            this.profCtx.strokeStyle = '#4ecdc4';
+            this.profCtx.lineWidth = 4;
+            this.profCtx.strokeRect(20, 20, this.profCanvas.width - 40, this.profCanvas.height - 40);
+            
+            // Testo
             this.profCtx.fillStyle = '#4ecdc4';
-            this.profCtx.font = `${this.profCanvas.width * 0.08}px "Press Start 2P"`;
+            this.profCtx.font = `${Math.min(this.profCanvas.width * 0.08, 32)}px "Press Start 2P"`;
             this.profCtx.textAlign = 'center';
             this.profCtx.fillText('PROF', this.profCanvas.width/2, this.profCanvas.height/2 - 40);
             this.profCtx.fillText('SILVER', this.profCanvas.width/2, this.profCanvas.height/2 + 40);
             
-            this.profCtx.strokeStyle = '#4ecdc4';
-            this.profCtx.lineWidth = 4;
-            this.profCtx.strokeRect(20, 20, this.profCanvas.width - 40, this.profCanvas.height - 40);
+            // Dettagli decorativi
+            this.profCtx.fillStyle = '#45b7d1';
+            this.profCtx.fillRect(this.profCanvas.width/2 - 30, this.profCanvas.height/2 + 60, 60, 4);
+            
             return;
         }
         
@@ -877,14 +827,12 @@ window.IntroManager = class IntroManager {
     endIntro() {
         this.isActive = false;
         
-        if (this.keydownHandler) {
-            document.removeEventListener('keydown', this.keydownHandler);
-        }
-
-        if (this.clickHandler) {
-            document.removeEventListener('click', this.clickHandler);
+        // Rimuovi event listeners
+        if (this.keyHandler) {
+            document.removeEventListener('keydown', this.keyHandler);
         }
         
+        // Fade out
         this.overlay.style.transition = 'opacity 1s ease-out';
         this.overlay.style.opacity = '0';
         
@@ -893,14 +841,21 @@ window.IntroManager = class IntroManager {
                 document.body.removeChild(this.overlay);
             }
             
-            // Rimuovi immediatamente il main menu se esiste
+            // Pulisci main menu se esiste
             if (this.game.mainMenu) {
                 this.game.mainMenu.isActive = false;
                 this.game.mainMenu = null;
             }
             
+            // Attiva modalità gioco per mobile
+            if (window.mobileControls) {
+                window.mobileControls.setGameMode();
+            }
+            
+            // Mostra minimap e avvia gioco
             this.showMinimap();
             this.game.startMainGame();
+            
             console.log(`Benvenuto nel mondo di SilverStudio! Personaggio: ${this.selectedGender}`);
         }, 1000);
     }

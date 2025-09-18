@@ -1,15 +1,17 @@
-// assets/js/mobileControls.js - Gestione controlli touch mobile
+// assets/js/mobileControls.js - Controlli mobile ottimizzati per intro e gioco
 
 class MobileControls {
     constructor(inputManager) {
         this.inputManager = inputManager;
+        this.currentMode = 'intro'; // 'intro' o 'game'
+        
         this.joystick = {
             base: null,
             knob: null,
             active: false,
             startPos: { x: 0, y: 0 },
             currentPos: { x: 0, y: 0 },
-            maxDistance: 35
+            maxDistance: 45
         };
         
         this.buttons = {};
@@ -22,21 +24,79 @@ class MobileControls {
             escape: false
         };
         
+        this.orientationHandler = new OrientationManager();
         this.init();
     }
     
     init() {
         if (!this.isTouchDevice()) return;
         
-        this.setupJoystick();
-        this.setupButtons();
+        this.setupControls();
+        this.setupOrientationDetection();
         this.preventZoom();
+        this.setIntroMode();
         
-        console.log('Mobile controls initialized');
+        console.log('Mobile controls initialized in intro mode');
     }
     
     isTouchDevice() {
         return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    }
+    
+    setIntroMode() {
+        this.currentMode = 'intro';
+        document.body.className = 'intro-mode';
+        
+        const controls = document.getElementById('mobileControls');
+        if (controls) {
+            controls.classList.add('intro-mode');
+            controls.classList.add('active');
+        }
+        
+        this.orientationHandler.allowAnyOrientation();
+        console.log('Switched to intro mode');
+    }
+    
+    setGameMode() {
+        this.currentMode = 'game';
+        document.body.className = 'game-mode';
+        
+        const controls = document.getElementById('mobileControls');
+        if (controls) {
+            controls.classList.remove('intro-mode');
+            controls.classList.add('active');
+        }
+        
+        this.orientationHandler.requireLandscape();
+        console.log('Switched to game mode');
+    }
+    
+    setupControls() {
+        this.setupJoystick();
+        this.setupButtons();
+    }
+    
+    setupOrientationDetection() {
+        const checkOrientation = () => {
+            const isPortrait = window.innerHeight > window.innerWidth;
+            
+            if (isPortrait) {
+                document.body.classList.add('portrait');
+                document.body.classList.remove('landscape');
+            } else {
+                document.body.classList.add('landscape');
+                document.body.classList.remove('portrait');
+            }
+            
+            this.orientationHandler.handleOrientationChange(isPortrait);
+        };
+        
+        window.addEventListener('orientationchange', () => {
+            setTimeout(checkOrientation, 100);
+        });
+        
+        window.addEventListener('resize', checkOrientation);
+        checkOrientation();
     }
     
     setupJoystick() {
@@ -47,10 +107,10 @@ class MobileControls {
         
         // Touch events
         this.joystick.base.addEventListener('touchstart', this.onJoystickStart.bind(this), { passive: false });
-        this.joystick.base.addEventListener('touchmove', this.onJoystickMove.bind(this), { passive: false });
-        this.joystick.base.addEventListener('touchend', this.onJoystickEnd.bind(this), { passive: false });
+        document.addEventListener('touchmove', this.onJoystickMove.bind(this), { passive: false });
+        document.addEventListener('touchend', this.onJoystickEnd.bind(this), { passive: false });
         
-        // Mouse events per testing su desktop
+        // Mouse events per testing
         this.joystick.base.addEventListener('mousedown', this.onJoystickStartMouse.bind(this));
         document.addEventListener('mousemove', this.onJoystickMoveMouse.bind(this));
         document.addEventListener('mouseup', this.onJoystickEndMouse.bind(this));
@@ -60,45 +120,85 @@ class MobileControls {
         // Pulsante interazione
         const interactBtn = document.getElementById('interactButton');
         if (interactBtn) {
-            interactBtn.addEventListener('touchstart', () => this.pressButton('space'), { passive: true });
-            interactBtn.addEventListener('touchend', () => this.releaseButton('space'), { passive: true });
-            interactBtn.addEventListener('mousedown', () => this.pressButton('space'));
-            interactBtn.addEventListener('mouseup', () => this.releaseButton('space'));
+            interactBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.pressButton('space');
+            }, { passive: false });
+            
+            interactBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this.releaseButton('space');
+            }, { passive: false });
+            
+            // Mouse events per testing
+            interactBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.pressButton('space');
+            });
+            
+            interactBtn.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                this.releaseButton('space');
+            });
         }
         
         // Pulsante menu
         const menuBtn = document.getElementById('menuButton');
         if (menuBtn) {
-            menuBtn.addEventListener('touchstart', () => this.pressButton('escape'), { passive: true });
-            menuBtn.addEventListener('touchend', () => this.releaseButton('escape'), { passive: true });
-            menuBtn.addEventListener('mousedown', () => this.pressButton('escape'));
-            menuBtn.addEventListener('mouseup', () => this.releaseButton('escape'));
+            menuBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.pressButton('escape');
+            }, { passive: false });
+            
+            menuBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                this.releaseButton('escape');
+            }, { passive: false });
+            
+            // Mouse events per testing
+            menuBtn.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.pressButton('escape');
+            });
+            
+            menuBtn.addEventListener('mouseup', (e) => {
+                e.preventDefault();
+                this.releaseButton('escape');
+            });
         }
     }
     
+    // Joystick touch events
     onJoystickStart(e) {
-        e.preventDefault();
-        const touch = e.touches[0];
-        this.startJoystick(touch.clientX, touch.clientY);
+        if (e.target.closest('#virtualJoystick')) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            this.startJoystick(touch.clientX, touch.clientY);
+        }
     }
     
     onJoystickMove(e) {
-        e.preventDefault();
         if (!this.joystick.active) return;
-        
+        e.preventDefault();
         const touch = e.touches[0];
-        this.moveJoystick(touch.clientX, touch.clientY);
+        if (touch) {
+            this.moveJoystick(touch.clientX, touch.clientY);
+        }
     }
     
     onJoystickEnd(e) {
-        e.preventDefault();
-        this.endJoystick();
+        if (this.joystick.active) {
+            e.preventDefault();
+            this.endJoystick();
+        }
     }
     
-    // Mouse events per desktop testing
+    // Mouse events per testing
     onJoystickStartMouse(e) {
-        e.preventDefault();
-        this.startJoystick(e.clientX, e.clientY);
+        if (e.target.closest('#virtualJoystick')) {
+            e.preventDefault();
+            this.startJoystick(e.clientX, e.clientY);
+        }
     }
     
     onJoystickMoveMouse(e) {
@@ -108,8 +208,10 @@ class MobileControls {
     }
     
     onJoystickEndMouse(e) {
-        if (!this.joystick.active) return;
-        this.endJoystick();
+        if (this.joystick.active) {
+            e.preventDefault();
+            this.endJoystick();
+        }
     }
     
     startJoystick(clientX, clientY) {
@@ -123,6 +225,7 @@ class MobileControls {
         };
         
         this.moveJoystick(clientX, clientY);
+        this.addHapticFeedback(30);
     }
     
     moveJoystick(clientX, clientY) {
@@ -139,11 +242,10 @@ class MobileControls {
             this.joystick.currentPos.y = 0;
         }
         
-        // Aggiorna posizione visiva del knob
+        // Aggiorna posizione visiva
         this.joystick.knob.style.transform = 
             `translate(-50%, -50%) translate(${this.joystick.currentPos.x}px, ${this.joystick.currentPos.y}px)`;
         
-        // Calcola direzioni virtuali
         this.updateVirtualKeys();
     }
     
@@ -153,10 +255,10 @@ class MobileControls {
         this.joystick.currentPos.x = 0;
         this.joystick.currentPos.y = 0;
         
-        // Reset posizione knob
+        // Reset posizione
         this.joystick.knob.style.transform = 'translate(-50%, -50%)';
         
-        // Reset tasti virtuali
+        // Reset tasti
         this.virtualKeys.up = false;
         this.virtualKeys.down = false;
         this.virtualKeys.left = false;
@@ -172,7 +274,7 @@ class MobileControls {
         this.virtualKeys.left = false;
         this.virtualKeys.right = false;
         
-        // Calcola direzioni
+        // Solo se il movimento è significativo
         if (Math.abs(this.joystick.currentPos.x) > threshold || Math.abs(this.joystick.currentPos.y) > threshold) {
             if (this.joystick.currentPos.y < -threshold) this.virtualKeys.up = true;
             if (this.joystick.currentPos.y > threshold) this.virtualKeys.down = true;
@@ -185,50 +287,63 @@ class MobileControls {
         this.virtualKeys[key] = true;
         
         // Feedback visivo
-        const button = key === 'space' ? document.getElementById('interactButton') : document.getElementById('menuButton');
+        const button = key === 'space' ? 
+            document.getElementById('interactButton') : 
+            document.getElementById('menuButton');
+            
         if (button) {
             button.classList.add('pressed');
-            setTimeout(() => button.classList.remove('pressed'), 100);
+            setTimeout(() => button.classList.remove('pressed'), 150);
         }
         
-        // Feedback haptic se disponibile
-        if (navigator.vibrate) {
-            navigator.vibrate(50);
-        }
+        this.addHapticFeedback(50);
     }
     
     releaseButton(key) {
-        // Per i pulsanti, simuliamo un keyPressed event
+        // Simula keyPressed per compatibilità
         if (key === 'space') {
             this.inputManager.keyPressed['Space'] = true;
+            this.inputManager.keyPressed['Enter'] = true;
         } else if (key === 'escape') {
             this.inputManager.keyPressed['Escape'] = true;
         }
         
         setTimeout(() => {
             this.virtualKeys[key] = false;
-        }, 50);
+        }, 100);
+    }
+    
+    addHapticFeedback(duration = 50) {
+        if (navigator.vibrate) {
+            navigator.vibrate(duration);
+        }
     }
     
     preventZoom() {
-        // Previeni zoom con pinch
+        // Previeni zoom con gesture
         document.addEventListener('gesturestart', e => e.preventDefault(), { passive: false });
         document.addEventListener('gesturechange', e => e.preventDefault(), { passive: false });
         document.addEventListener('gestureend', e => e.preventDefault(), { passive: false });
         
-        // Previeni zoom doppio tap su bottoni
-        document.addEventListener('dblclick', e => {
-            if (e.target.closest('#mobileControls')) {
+        // Previeni zoom doppio tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = new Date().getTime();
+            if (now - lastTouchEnd <= 300) {
                 e.preventDefault();
             }
+            lastTouchEnd = now;
         }, { passive: false });
+        
+        // Previeni context menu
+        document.addEventListener('contextmenu', e => e.preventDefault(), { passive: false });
     }
     
-    // Integrazione con InputManager esistente
+    // Integrazione con InputManager
     getMovementDirection() {
         let dx = 0, dy = 0;
         
-        // Movimento da joystick virtuale (più preciso)
+        // Movimento da joystick (più preciso)
         if (this.joystick.active && (Math.abs(this.joystick.currentPos.x) > 10 || Math.abs(this.joystick.currentPos.y) > 10)) {
             dx = this.joystick.currentPos.x / this.joystick.maxDistance;
             dy = this.joystick.currentPos.y / this.joystick.maxDistance;
@@ -260,14 +375,52 @@ class MobileControls {
         
         return keyMap[key] || false;
     }
+}
+
+// Gestore orientamento schermo
+class OrientationManager {
+    constructor() {
+        this.requiresLandscape = false;
+        this.rotateOverlay = document.getElementById('rotateOverlay');
+    }
     
-    wasPressed(key) {
-        // Questo viene gestito nella releaseButton per i pulsanti
-        return false;
+    allowAnyOrientation() {
+        this.requiresLandscape = false;
+        this.hideRotateOverlay();
+    }
+    
+    requireLandscape() {
+        this.requiresLandscape = true;
+        this.checkOrientation();
+    }
+    
+    handleOrientationChange(isPortrait) {
+        if (this.requiresLandscape && isPortrait) {
+            this.showRotateOverlay();
+        } else {
+            this.hideRotateOverlay();
+        }
+    }
+    
+    checkOrientation() {
+        const isPortrait = window.innerHeight > window.innerWidth;
+        this.handleOrientationChange(isPortrait);
+    }
+    
+    showRotateOverlay() {
+        if (this.rotateOverlay) {
+            this.rotateOverlay.style.display = 'flex';
+        }
+    }
+    
+    hideRotateOverlay() {
+        if (this.rotateOverlay) {
+            this.rotateOverlay.style.display = 'none';
+        }
     }
 }
 
-// Estendi InputManager per supportare controlli mobile
+// Estensione InputManager per supporto mobile
 window.addEventListener('DOMContentLoaded', () => {
     if (window.InputManager) {
         const originalInputManager = window.InputManager;
@@ -276,10 +429,13 @@ window.addEventListener('DOMContentLoaded', () => {
             constructor() {
                 super();
                 this.mobileControls = new MobileControls(this);
+                
+                // Aggiungi riferimenti globali per controllo modalità
+                window.mobileControls = this.mobileControls;
             }
             
             getMovementDirection() {
-                // Prova prima i controlli mobile
+                // Prima i controlli mobile se disponibili
                 if (this.mobileControls && this.mobileControls.isTouchDevice()) {
                     const mobileMovement = this.mobileControls.getMovementDirection();
                     if (mobileMovement.dx !== 0 || mobileMovement.dy !== 0) {
@@ -287,17 +443,30 @@ window.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 
-                // Fallback ai controlli desktop originali
+                // Fallback desktop
                 return super.getMovementDirection();
             }
             
             isPressed(key) {
-                // Controlla prima mobile, poi desktop
+                // Prima mobile, poi desktop
                 if (this.mobileControls && this.mobileControls.isTouchDevice()) {
                     if (this.mobileControls.isPressed(key)) return true;
                 }
                 
                 return super.isPressed(key);
+            }
+            
+            // Metodi per cambio modalità
+            setIntroMode() {
+                if (this.mobileControls) {
+                    this.mobileControls.setIntroMode();
+                }
+            }
+            
+            setGameMode() {
+                if (this.mobileControls) {
+                    this.mobileControls.setGameMode();
+                }
             }
         };
     }
