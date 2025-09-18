@@ -482,5 +482,3 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     }
 });
-
-console.log('Mobile controls module loaded');
