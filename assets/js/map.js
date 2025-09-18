@@ -9,7 +9,8 @@ window.GameMap = class GameMap {
 
     update() {
         this.animationTimer++;
-        if (this.animationTimer > 10000) { // Reset per evitare overflow
+        console.log('Map update called, timer:', this.animationTimer); // Debug
+        if (this.animationTimer > 10000) {
             this.animationTimer = 0;
         }
     }

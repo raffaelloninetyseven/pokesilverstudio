@@ -167,15 +167,15 @@ window.SpriteManager = class SpriteManager {
         if (tileName === 'water') {
             const sprite = this.getSprite('water');
             if (sprite && sprite.complete) {
-                // 4 frame da 32x32 in orizzontale
-                const frameWidth = 32;
-                const frameHeight = 32;
-                const currentFrame = Math.floor(animationFrame / 30) % 4; // Cambia frame ogni 30 tick (~0.5 sec)
+                // 3 frame da 16x16 in orizzontale (sprite totale: 48x16)
+                const frameWidth = 16;
+                const frameHeight = 16;
+                const currentFrame = Math.floor(animationFrame / 40) % 3; 
                 
                 ctx.drawImage(
                     sprite,
-                    currentFrame * frameWidth, 0, frameWidth, frameHeight, // Frame specifico
-                    x, y, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE
+                    currentFrame * frameWidth, 0, frameWidth, frameHeight, 
+                    x, y, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE 
                 );
                 return true;
             }
