@@ -10,7 +10,9 @@ window.Game = class Game {
         this.handleResize();
         
         this.camera = new Camera(this.canvas.width, this.canvas.height);
-        this.player = new Player(20, 20);
+    
+        this.player = new Player(CONFIG.PLAYER_SPAWN_X, CONFIG.PLAYER_SPAWN_Y);
+        
         this.map = new GameMap();
         this.buildings = new Buildings();
         this.ui = new UI();
@@ -102,7 +104,7 @@ window.Game = class Game {
             this.assetsLoaded = true;
         }
     }
-    
+
     update(deltaTime) {
         if (!this.gameStarted || !this.assetsLoaded) return;
 
@@ -141,7 +143,7 @@ window.Game = class Game {
         
         this.ui.updateMinimap(this.player, this.camera, this.map);
     }
-    
+
     render() {
         this.ctx.clearRect(0, 0, CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
         
@@ -160,8 +162,8 @@ window.Game = class Game {
         
         // Controlla se siamo in un interno
         if (this.interiorManager.currentInterior) {
-            // Rendering dell'interno - NON disegnare mappa esterna
-            this.map.render(this.ctx, this.camera, this.spriteManager);
+            // Rendering dell'interno
+            this.interiorManager.render(this.ctx, this.camera, this.spriteManager);
             this.player.render(this.ctx, this.camera, this.spriteManager);
         } else {
             // Rendering normale della mappa esterna

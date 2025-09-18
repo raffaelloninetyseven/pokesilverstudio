@@ -1,43 +1,34 @@
+// Mappa identica pixel per pixel - sostituisci assets/js/map.js
+
 window.GameMap = class GameMap {
     constructor() {
         this.tiles = [];
         this.decorations = [];
-        this.tileVariations = [];
         this.animationTimer = 0;
-        this.generateMap();
+        this.createExactMap();
     }
 
     update() {
         this.animationTimer++;
-        console.log('Map update called, timer:', this.animationTimer); // Debug
         if (this.animationTimer > 10000) {
             this.animationTimer = 0;
         }
     }
     
-    generateMap() {
-        this.tiles = [];
-        this.tileVariations = []; // Nuovo array per salvare le variazioni
-        
-        // Genera mappa e variazioni UNA VOLTA
+    createExactMap() {
+        // Inizializza con erba
         for (let y = 0; y < CONFIG.MAP_HEIGHT; y++) {
             this.tiles[y] = [];
-            this.tileVariations[y] = [];
             for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
                 this.tiles[y][x] = 'grass-flowers';
-                // Salva la variazione una volta sola
-                this.tileVariations[y][x] = Math.random() > 0.6 ? 1 : 0;
             }
         }
-        
-        this.createTreeBorder();
-        this.createMainRoads(); 
-        this.createSpecialAreas();
-        this.generateTreesAndRocks();
+
+        this.createPixelPerfectLayout();
     }
 
-    createTreeBorder() {
-        // Alberi su tutti i bordi per impedire l'uscita
+    createPixelPerfectLayout() {
+        // BORDO COMPLETO DI ALBERI
         for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
             for (let y = 0; y < CONFIG.MAP_HEIGHT; y++) {
                 if (x === 0 || x === CONFIG.MAP_WIDTH-1 || y === 0 || y === CONFIG.MAP_HEIGHT-1) {
@@ -45,157 +36,246 @@ window.GameMap = class GameMap {
                 }
             }
         }
-        
-        // Entrate - Route 7 equivalente (est) e Route 16 equivalente (ovest)
-        // Cancella gli alberi per le entrate
-        const eastEntrance = { x: CONFIG.MAP_WIDTH-1, y: 20 };
-        const westEntrance = { x: 0, y: 18 };
-        
-        // Rimuovi alberi per creare entrate
+
+        // ENTRATE
+        // Entrata ovest (coordinate 0,11-12)
         this.decorations = this.decorations.filter(dec => 
-            !(dec.x === eastEntrance.x && dec.y >= eastEntrance.y-1 && dec.y <= eastEntrance.y+1) &&
-            !(dec.x === westEntrance.x && dec.y >= westEntrance.y-1 && dec.y <= westEntrance.y+1)
+            !(dec.x === 0 && (dec.y === 11 || dec.y === 12))
         );
-    }
+        
+        // Entrata est (coordinate 49,11-12)
+        this.decorations = this.decorations.filter(dec => 
+            !(dec.x === CONFIG.MAP_WIDTH-1 && (dec.y === 11 || dec.y === 12))
+        );
 
-    createMainRoads() {
-        // Strada orizzontale principale (come in Celadon)
+        // STRADE PRINCIPALI
+        
+        // Strada orizzontale nord (y=11-12, attraversa tutto)
         for (let x = 1; x < CONFIG.MAP_WIDTH-1; x++) {
-            this.tiles[20][x] = 'path';
-            this.tiles[21][x] = 'path';
+            this.tiles[11][x] = 'path';
+            this.tiles[12][x] = 'path';
         }
         
-        // Strada verticale principale
-        for (let y = 8; y < CONFIG.MAP_HEIGHT-2; y++) {
-            this.tiles[y][22] = 'path';
-            this.tiles[y][23] = 'path';
+        // Strada verticale ovest (x=15-16, da y=13 a y=25)
+        for (let y = 13; y <= 25; y++) {
+            this.tiles[y][15] = 'path';
+            this.tiles[y][16] = 'path';
         }
         
-        // Strada per raggiungere la Skills Gym (sud)
-        for (let y = 22; y < 35; y++) {
-            this.tiles[y][9] = 'path';
+        // Strada verticale centro (x=24-25, da y=13 a y=19)
+        for (let y = 13; y <= 19; y++) {
+            this.tiles[y][24] = 'path';
+            this.tiles[y][25] = 'path';
         }
         
-        // Strada per il Silver Department
-        for (let x = 9; x < 22; x++) {
-            this.tiles[16][x] = 'path';
+        // Strada verticale est (x=32-33, da y=13 a y=25)
+        for (let y = 13; y <= 25; y++) {
+            this.tiles[y][32] = 'path';
+            this.tiles[y][33] = 'path';
         }
         
-        // Strada per la Mansion
-        for (let x = 24; x < 38; x++) {
-            this.tiles[14][x] = 'path';
+        // Strada orizzontale sud (y=25-26, da x=15 a x=33)
+        for (let x = 15; x <= 33; x++) {
+            this.tiles[25][x] = 'path';
+            this.tiles[26][x] = 'path';
         }
-    }
 
-    createSpecialAreas() {
-        // Piccolo laghetto decorativo (come la fontana di Celadon)
-        for (let y = 6; y < 10; y++) {
-            for (let x = 26; x < 30; x++) {
+        // AREE ACQUA
+        
+        // Fontana centrale (x=26-29, y=15-18)
+        for (let y = 15; y <= 18; y++) {
+            for (let x = 26; x <= 29; x++) {
                 this.tiles[y][x] = 'water';
             }
         }
         
-        // Piazza centrale con pietra
-        for (let y = 18; y < 24; y++) {
-            for (let x = 20; x < 26; x++) {
-                if (this.tiles[y][x] !== 'path') {
-                    this.tiles[y][x] = 'stone';
-                }
-            }
-        }
-    }
-    
-    createWaterFeatures() {
-        // Piccolo lago nell'angolo
-        for (let y = 35; y < 42; y++) {
-            for (let x = 5; x < 12; x++) {
-                if (this.isValidTile(x, y)) {
-                    this.tiles[y][x] = 'water';
-                }
+        // Stagno nord-ovest (x=8-11, y=4-7)
+        for (let y = 4; y <= 7; y++) {
+            for (let x = 8; x <= 11; x++) {
+                this.tiles[y][x] = 'water';
             }
         }
         
-        // Ponte sul lago
-        for (let x = 8; x < 10; x++) {
-            this.tiles[38][x] = 'bridge';
+        // Stagno sud (x=20-23, y=29-32)
+        for (let y = 29; y <= 32; y++) {
+            for (let x = 20; x <= 23; x++) {
+                this.tiles[y][x] = 'water';
+            }
         }
-    }
 
-    createPaths() {
-        for (let x = 0; x < CONFIG.MAP_WIDTH; x++) {
-            this.tiles[15][x] = 'path';
-            this.tiles[16][x] = 'path';
-        }
-        
-        for (let y = 0; y < CONFIG.MAP_HEIGHT; y++) {
-            this.tiles[y][20] = 'path';
-            this.tiles[y][21] = 'path';
-        }
-        
-        CONFIG.BUILDINGS.forEach(building => {
-            const entranceX = building.entrance.x;
-            const entranceY = building.entrance.y;
+        // EDIFICI IDENTICI ALL'IMMAGINE
+        CONFIG.BUILDINGS = [
+            // Edificio grande blu nord-ovest (Department Store equivalent)
+            {
+                x: 3, y: 2, width: 8, height: 8,
+                type: 'projects',
+                name: 'Silver Department',
+                entrance: { x: 7, y: 10 },
+                color: '#4169E1',
+                hasInterior: true,
+                interiorMap: 'projects_interior'
+            },
             
-            if (entranceY < 15) {
-                for (let y = entranceY; y <= 15; y++) {
-                    if (this.isValidTile(entranceX, y)) {
-                        this.tiles[y][entranceX] = 'path';
-                    }
-                }
-            } else if (entranceY > 16) {
-                for (let y = 16; y <= entranceY; y++) {
-                    if (this.isValidTile(entranceX, y)) {
-                        this.tiles[y][entranceX] = 'path';
-                    }
-                }
+            // Edificio giallo-rosso nord-centro (Game Corner)
+            {
+                x: 17, y: 2, width: 6, height: 7,
+                type: 'casino',
+                name: 'Game Corner',
+                entrance: { x: 20, y: 9 },
+                color: '#FFD700',
+                hasInterior: true,
+                interiorMap: 'casino_interior'
+            },
+            
+            // Edificio marrone grande nord-est (Mansion)
+            {
+                x: 28, y: 2, width: 10, height: 8,
+                type: 'about',
+                name: 'Silver Mansion', 
+                entrance: { x: 32, y: 10 },
+                color: '#8B4513',
+                hasInterior: true,
+                interiorMap: 'about_interior'
+            },
+            
+            // Edificio rosa est (Pokemon Center equivalent)
+            {
+                x: 35, y: 14, width: 6, height: 4,
+                type: 'contact',
+                name: 'Contact Center',
+                entrance: { x: 38, y: 18 },
+                color: '#FF69B4',
+                hasInterior: true,
+                interiorMap: 'contact_interior'
+            },
+            
+            // Edificio verde sud-ovest (Gym)
+            {
+                x: 3, y: 18, width: 6, height: 6,
+                type: 'skills',
+                name: 'Skills Gym',
+                entrance: { x: 6, y: 24 },
+                color: '#32CD32',
+                hasInterior: true,
+                interiorMap: 'skills_interior'
+            },
+            
+            // Edifici decorativi aggiuntivi per completare la città
+            {
+                x: 18, y: 14, width: 4, height: 3,
+                type: 'decoration',
+                name: 'Casa Residenziale',
+                entrance: { x: 20, y: 17 },
+                color: '#DEB887',
+                hasInterior: false
+            },
+            
+            {
+                x: 28, y: 14, width: 3, height: 3,
+                type: 'decoration', 
+                name: 'Piccolo Negozio',
+                entrance: { x: 29, y: 17 },
+                color: '#CD853F',
+                hasInterior: false
+            },
+            
+            {
+                x: 18, y: 20, width: 4, height: 4,
+                type: 'decoration',
+                name: 'Condominio',
+                entrance: { x: 20, y: 24 },
+                color: '#A0522D',
+                hasInterior: false
+            },
+            
+            {
+                x: 42, y: 2, width: 4, height: 4,
+                type: 'decoration',
+                name: 'Villa',
+                entrance: { x: 44, y: 6 },
+                color: '#8A2BE2',
+                hasInterior: false
+            },
+            
+            {
+                x: 42, y: 20, width: 3, height: 3,
+                type: 'decoration',
+                name: 'Market',
+                entrance: { x: 43, y: 23 },
+                color: '#FF8C00',
+                hasInterior: false
             }
+        ];
+
+        // DECORAZIONI PRECISE
+        const preciseDecorations = [
+            // Staccionate/barriere (rappresentate come rocce marroni)
+            { x: 11, y: 15, type: 'rock' },
+            { x: 11, y: 16, type: 'rock' },
+            { x: 11, y: 17, type: 'rock' },
+            { x: 11, y: 18, type: 'rock' },
+            { x: 11, y: 19, type: 'rock' },
+            { x: 11, y: 20, type: 'rock' },
+            { x: 11, y: 21, type: 'rock' },
+            { x: 11, y: 22, type: 'rock' },
+            { x: 11, y: 23, type: 'rock' },
             
-            if (entranceX < 20) {
-                for (let x = entranceX; x <= 20; x++) {
-                    if (this.isValidTile(x, entranceY)) {
-                        this.tiles[entranceY][x] = 'path';
-                    }
-                }
-            } else if (entranceX > 21) {
-                for (let x = 21; x <= entranceX; x++) {
-                    if (this.isValidTile(x, entranceY)) {
-                        this.tiles[entranceY][x] = 'path';
-                    }
-                }
+            { x: 37, y: 15, type: 'rock' },
+            { x: 37, y: 16, type: 'rock' },
+            { x: 37, y: 17, type: 'rock' },
+            { x: 37, y: 18, type: 'rock' },
+            { x: 37, y: 19, type: 'rock' },
+            { x: 37, y: 20, type: 'rock' },
+            { x: 37, y: 21, type: 'rock' },
+            { x: 37, y: 22, type: 'rock' },
+            { x: 37, y: 23, type: 'rock' },
+            
+            // Alberi isolati dentro la città
+            { x: 12, y: 4, type: 'tree' },
+            { x: 13, y: 5, type: 'tree' },
+            { x: 25, y: 4, type: 'tree' },
+            { x: 26, y: 5, type: 'tree' },
+            { x: 40, y: 4, type: 'tree' },
+            { x: 41, y: 5, type: 'tree' },
+            { x: 5, y: 15, type: 'tree' },
+            { x: 43, y: 15, type: 'tree' },
+            { x: 5, y: 30, type: 'tree' },
+            { x: 43, y: 30, type: 'tree' },
+            
+            // Dettagli decorativi vicino agli stagni
+            { x: 7, y: 8, type: 'rock' },
+            { x: 12, y: 7, type: 'rock' },
+            { x: 19, y: 30, type: 'rock' },
+            { x: 24, y: 33, type: 'rock' },
+            
+            // Piccole aiuole/decorazioni
+            { x: 14, y: 14, type: 'rock' },
+            { x: 30, y: 20, type: 'rock' },
+            { x: 22, y: 22, type: 'rock' },
+            
+            // Alberi negli angoli degli isolati
+            { x: 17, y: 13, type: 'tree' },
+            { x: 31, y: 13, type: 'tree' },
+            { x: 17, y: 27, type: 'tree' },
+            { x: 31, y: 27, type: 'tree' },
+        ];
+
+        // Aggiungi decorazioni verificando compatibilità
+        preciseDecorations.forEach(decoration => {
+            if (this.canPlaceDecoration(decoration.x, decoration.y)) {
+                this.decorations.push(decoration);
             }
         });
-    }
-
-    generateTreesAndRocks() {
-        this.decorations = [];
-        
-        for (let i = 0; i < 100; i++) { // Ridotto da 200 a 100
-            const x = Utils.randomInt(0, CONFIG.MAP_WIDTH - 1);
-            const y = Utils.randomInt(0, CONFIG.MAP_HEIGHT - 1);
-            
-            if (this.canPlaceDecoration(x, y)) {
-                const rand = Math.random();
-                let type;
-                
-                if (rand < 0.8) {
-                    type = 'tree';
-                } else {
-                    type = 'rock';
-                }
-                // Niente più flower1 e flower2
-                
-                this.decorations.push({ x, y, type });
-            }
-        }
     }
     
     canPlaceDecoration(x, y) {
         if (!this.isValidTile(x, y)) return false;
         if (this.tiles[y][x] === 'path') return false;
+        if (this.tiles[y][x] === 'water') return false;
         
         return !CONFIG.BUILDINGS.some(building => {
-            return x >= building.x - 1 && x <= building.x + building.width &&
-                   y >= building.y - 1 && y <= building.y + building.height;
+            return x >= building.x && x < building.x + building.width &&
+                   y >= building.y && y < building.y + building.height;
         });
     }
     
@@ -265,23 +345,18 @@ window.GameMap = class GameMap {
         let spriteDrawn = false;
         
         if (tile === 'water' && spriteManager) {
-            // Usa l'animazione per l'acqua
             spriteDrawn = spriteManager.drawAnimatedTile(ctx, tile, screenPos.x, screenPos.y, this.animationTimer);
-        } else if (tile === 'grass-flowers' && spriteManager) {
-            const variation = this.tileVariations[y][x];
-            spriteDrawn = spriteManager.drawVariatedTile(ctx, tile, screenPos.x, screenPos.y, variation);
         } else {
             spriteDrawn = spriteManager && spriteManager.drawTile(ctx, tile, screenPos.x, screenPos.y);
         }
         
         if (!spriteDrawn) {
-            // Fallback per colori
-            if (tile === 'grass-flowers') {
-                ctx.fillStyle = '#4a7c47';
-            } else if (tile === 'water') {
+            if (tile === 'water') {
                 ctx.fillStyle = '#4a90e2';
+            } else if (tile === 'path') {
+                ctx.fillStyle = '#c8a882';
             } else {
-                ctx.fillStyle = CONFIG.COLORS[tile.toUpperCase()] || '#4a7c47';
+                ctx.fillStyle = '#4a7c47';
             }
             ctx.fillRect(screenPos.x, screenPos.y, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
         }
@@ -290,11 +365,9 @@ window.GameMap = class GameMap {
     renderDecoration(ctx, camera, decoration, spriteManager) {
         const screenPos = camera.worldToScreen(decoration.x * CONFIG.TILE_SIZE, decoration.y * CONFIG.TILE_SIZE);
         
-        // Prova a usare sprite, altrimenti fallback
         const spriteDrawn = spriteManager && spriteManager.drawTile(ctx, decoration.type, screenPos.x, screenPos.y);
         
         if (!spriteDrawn) {
-            // Fallback rendering originale
             switch(decoration.type) {
                 case 'tree':
                     ctx.fillStyle = CONFIG.COLORS.TREE_TRUNK;
@@ -306,23 +379,12 @@ window.GameMap = class GameMap {
                     ctx.fill();
                     break;
                     
-                case 'flower1':
-                    ctx.fillStyle = CONFIG.COLORS.FLOWER_1;
-                    ctx.beginPath();
-                    ctx.arc(screenPos.x + 16, screenPos.y + 16, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                    break;
-                    
-                case 'flower2':
-                    ctx.fillStyle = CONFIG.COLORS.FLOWER_2;
-                    ctx.beginPath();
-                    ctx.arc(screenPos.x + 16, screenPos.y + 16, 3, 0, Math.PI * 2);
-                    ctx.fill();
-                    break;
-                    
                 case 'rock':
-                    ctx.fillStyle = CONFIG.COLORS.ROCK;
-                    ctx.fillRect(screenPos.x + 8, screenPos.y + 8, 16, 16);
+                    // Staccionata/barriera marrone
+                    ctx.fillStyle = '#8B4513';
+                    ctx.fillRect(screenPos.x + 2, screenPos.y + 8, CONFIG.TILE_SIZE - 4, CONFIG.TILE_SIZE - 16);
+                    ctx.fillStyle = '#654321';
+                    ctx.fillRect(screenPos.x + 4, screenPos.y + 10, CONFIG.TILE_SIZE - 8, CONFIG.TILE_SIZE - 20);
                     break;
             }
         }

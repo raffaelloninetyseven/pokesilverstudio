@@ -1,11 +1,16 @@
 window.Player = class Player {
-    constructor(x, y) {
-        this.x = x * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
-        this.y = y * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+    constructor(tileX, tileY) {
+        // Posiziona il player al centro del tile specificato
+        this.x = tileX * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+        this.y = tileY * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+        
+        // Proprietà di movimento e animazione
         this.direction = 'down';
         this.isMoving = false;
         this.animationFrame = 0;
         this.animationTimer = 0;
+        
+        // Proprietà fisiche
         this.size = 20;
         this.walkSpeed = CONFIG.PLAYER_SPEED;
     }
@@ -26,6 +31,7 @@ window.Player = class Player {
     }
     
     updateDirection(movement) {
+        // Determina la direzione basata sul movimento
         if (Math.abs(movement.dy) > Math.abs(movement.dx)) {
             this.direction = movement.dy < 0 ? 'up' : 'down';
         } else {
@@ -42,28 +48,42 @@ window.Player = class Player {
         const isInterior = game && game.interiorManager && game.interiorManager.currentInterior;
         
         if (isInterior) {
-            // Collision detection per interni
-            const interior = map;
-            const tileSize = CONFIG.TILE_SIZE;
-            
-            // Controlla bordi dell'interno
-            if (newX >= tileSize && newX <= (interior.width - 1) * tileSize && 
-                newY >= tileSize && newY <= (interior.height - 1) * tileSize) {
-                this.x = newX;
-                this.y = newY;
-            }
+            this.moveInInterior(newX, newY, game);
         } else {
-            // Collision detection normale per mappa esterna
-            if (map.canMoveTo(newX, newY, this.size)) {
+            this.moveInExterior(newX, newY, map);
+        }
+    }
+    
+    moveInInterior(newX, newY, game) {
+        const interior = game.interiorManager.interiorMaps[game.interiorManager.currentInterior];
+        
+        // Limiti dell'interno (lascia un tile di margine per i muri)
+        const minX = CONFIG.TILE_SIZE + this.size / 2;
+        const maxX = (interior.width - 1) * CONFIG.TILE_SIZE - this.size / 2;
+        const minY = CONFIG.TILE_SIZE + this.size / 2;
+        const maxY = (interior.height - 1) * CONFIG.TILE_SIZE - this.size / 2;
+        
+        // Applica movimento se dentro i limiti
+        if (newX >= minX && newX <= maxX) {
+            this.x = newX;
+        }
+        if (newY >= minY && newY <= maxY) {
+            this.y = newY;
+        }
+    }
+    
+    moveInExterior(newX, newY, map) {
+        // Movimento normale nella mappa esterna con collision detection
+        if (map.canMoveTo(newX, newY, this.size)) {
+            this.x = newX;
+            this.y = newY;
+        } else {
+            // Prova movimento separato sui singoli assi
+            if (map.canMoveTo(newX, this.y, this.size)) {
                 this.x = newX;
+            }
+            if (map.canMoveTo(this.x, newY, this.size)) {
                 this.y = newY;
-            } else {
-                if (map.canMoveTo(newX, this.y, this.size)) {
-                    this.x = newX;
-                }
-                if (map.canMoveTo(this.x, newY, this.size)) {
-                    this.y = newY;
-                }
             }
         }
     }
@@ -71,42 +91,49 @@ window.Player = class Player {
     updateAnimation() {
         this.animationTimer += CONFIG.ANIMATION_SPEED;
         if (this.animationTimer >= 1) {
-            this.animationFrame = (this.animationFrame + 1) % 4; // Cicla tra frame 0, 1, 2, 3
+            this.animationFrame = (this.animationFrame + 1) % 4;
             this.animationTimer = 0;
         }
     }
     
     render(ctx, camera, spriteManager) {
-        // Ottieni riferimento al game se disponibile
+        const screenPos = this.calculateScreenPosition(camera);
+        
+        this.renderShadow(ctx, screenPos);
+        this.renderPlayer(ctx, screenPos, spriteManager);
+    }
+    
+    calculateScreenPosition(camera) {
         const game = window.game;
         const isInterior = game && game.interiorManager && game.interiorManager.currentInterior;
         
-        let screenPos;
         if (isInterior) {
-            // Negli interni, calcola posizione relativa al centro dell'edificio
-            const interior = game.map;
+            // Negli interni, rendering centrato sullo schermo
+            const interior = game.interiorManager.interiorMaps[game.interiorManager.currentInterior];
             const buildingPixelWidth = interior.width * CONFIG.TILE_SIZE;
             const buildingPixelHeight = interior.height * CONFIG.TILE_SIZE;
             const offsetX = (CONFIG.CANVAS_WIDTH - buildingPixelWidth) / 2;
             const offsetY = (CONFIG.CANVAS_HEIGHT - buildingPixelHeight) / 2;
             
-            // Il player x,y sono già in coordinate assolute dell'interno
-            // Dobbiamo solo trasformarle in coordinate schermo centrate
-            screenPos = {
+            return {
                 x: offsetX + this.x,
                 y: offsetY + this.y
             };
         } else {
-            screenPos = camera.worldToScreen(this.x, this.y);
+            // Rendering normale con camera
+            return camera.worldToScreen(this.x, this.y);
         }
-        
-        // Ombra
+    }
+    
+    renderShadow(ctx, screenPos) {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.beginPath();
         ctx.ellipse(screenPos.x, screenPos.y + 8, 6, 3, 0, 0, Math.PI * 2);
         ctx.fill();
-        
-        // Resto del rendering del player rimane uguale...
+    }
+    
+    renderPlayer(ctx, screenPos, spriteManager) {
+        // Calcola l'effetto "bob" durante il movimento
         let bobOffset = 0;
         if (this.isMoving) {
             bobOffset = Math.sin(this.animationFrame * Math.PI * 0.5) * 1;
@@ -114,6 +141,7 @@ window.Player = class Player {
         
         const renderY = screenPos.y + bobOffset;
         
+        // Prova a usare sprite, altrimenti fallback
         const spriteDrawn = spriteManager && spriteManager.drawSprite(
             ctx, 'player', screenPos.x, renderY, 
             this.isMoving ? this.animationFrame : 0, 
@@ -121,45 +149,69 @@ window.Player = class Player {
         );
         
         if (!spriteDrawn) {
-            // Fallback rendering...
-            if (CONFIG.PLAYER_GENDER === 'female') {
-                ctx.fillStyle = '#e91e63';
-                ctx.fillRect(screenPos.x - 6, renderY - 8, 12, 14);
-                ctx.fillStyle = '#ffeb3b';
-                ctx.fillRect(screenPos.x - 5, renderY - 12, 10, 6);
-                ctx.fillStyle = '#9c27b0';
-                ctx.fillRect(screenPos.x - 6, renderY - 14, 12, 3);
-            } else {
-                ctx.fillStyle = '#3498db';
-                ctx.fillRect(screenPos.x - 6, renderY - 8, 12, 14);
-                ctx.fillStyle = '#f39c12';
-                ctx.fillRect(screenPos.x - 5, renderY - 12, 10, 6);
-                ctx.fillStyle = '#e74c3c';
-                ctx.fillRect(screenPos.x - 6, renderY - 14, 12, 3);
-            }
+            this.renderFallbackPlayer(ctx, screenPos.x, renderY);
+        }
+    }
+    
+    renderFallbackPlayer(ctx, x, y) {
+        // Rendering fallback senza sprite
+        if (CONFIG.PLAYER_GENDER === 'female') {
+            // Player femminile
+            ctx.fillStyle = '#e91e63'; // Rosa
+            ctx.fillRect(x - 6, y - 8, 12, 14);
             
-            // Occhi
-            ctx.fillStyle = '#000';
-            if (this.direction === 'left') {
-                ctx.fillRect(screenPos.x - 3, renderY - 10, 1, 1);
-            } else if (this.direction === 'right') {
-                ctx.fillRect(screenPos.x + 2, renderY - 10, 1, 1);
-            } else {
-                ctx.fillRect(screenPos.x - 3, renderY - 10, 1, 1);
-                ctx.fillRect(screenPos.x + 2, renderY - 10, 1, 1);
-            }
+            ctx.fillStyle = '#ffeb3b'; // Giallo per capelli
+            ctx.fillRect(x - 5, y - 12, 10, 6);
             
-            // Gambe
-            if (this.isMoving) {
-                const legOffset = Math.sin(this.animationFrame * Math.PI) * 2;
-                ctx.fillStyle = '#2c3e50';
-                ctx.fillRect(screenPos.x - 4 + legOffset, renderY + 4, 2, 4);
-                ctx.fillRect(screenPos.x + 2 - legOffset, renderY + 4, 2, 4);
-            } else {
-                ctx.fillStyle = '#2c3e50';
-                ctx.fillRect(screenPos.x - 3, renderY + 4, 2, 4);
-                ctx.fillRect(screenPos.x + 1, renderY + 4, 2, 4);
-            }
+            ctx.fillStyle = '#9c27b0'; // Viola per accessori
+            ctx.fillRect(x - 6, y - 14, 12, 3);
+        } else {
+            // Player maschile
+            ctx.fillStyle = '#3498db'; // Blu
+            ctx.fillRect(x - 6, y - 8, 12, 14);
+            
+            ctx.fillStyle = '#f39c12'; // Arancione per capelli
+            ctx.fillRect(x - 5, y - 12, 10, 6);
+            
+            ctx.fillStyle = '#e74c3c'; // Rosso per cappello
+            ctx.fillRect(x - 6, y - 14, 12, 3);
+        }
+        
+        // Occhi
+        this.renderEyes(ctx, x, y);
+        
+        // Gambe
+        this.renderLegs(ctx, x, y);
+    }
+    
+    renderEyes(ctx, x, y) {
+        ctx.fillStyle = '#000';
+        
+        if (this.direction === 'left') {
+            // Solo occhio sinistro visibile
+            ctx.fillRect(x - 3, y - 10, 1, 1);
+        } else if (this.direction === 'right') {
+            // Solo occhio destro visibile
+            ctx.fillRect(x + 2, y - 10, 1, 1);
+        } else {
+            // Entrambi gli occhi visibili (up/down)
+            ctx.fillRect(x - 3, y - 10, 1, 1);
+            ctx.fillRect(x + 2, y - 10, 1, 1);
+        }
+    }
+    
+    renderLegs(ctx, x, y) {
+        ctx.fillStyle = '#2c3e50';
+        
+        if (this.isMoving) {
+            // Gambe animate durante il movimento
+            const legOffset = Math.sin(this.animationFrame * Math.PI) * 2;
+            ctx.fillRect(x - 4 + legOffset, y + 4, 2, 4);
+            ctx.fillRect(x + 2 - legOffset, y + 4, 2, 4);
+        } else {
+            // Gambe statiche
+            ctx.fillRect(x - 3, y + 4, 2, 4);
+            ctx.fillRect(x + 1, y + 4, 2, 4);
         }
     }
     
@@ -170,6 +222,13 @@ window.Player = class Player {
         };
     }
     
+    getWorldPosition() {
+        return {
+            x: this.x,
+            y: this.y
+        };
+    }
+    
     getCollisionBounds() {
         return {
             x: this.x - this.size / 2,
@@ -177,5 +236,15 @@ window.Player = class Player {
             width: this.size,
             height: this.size
         };
+    }
+    
+    setPosition(tileX, tileY) {
+        this.x = tileX * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+        this.y = tileY * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+    }
+    
+    setWorldPosition(worldX, worldY) {
+        this.x = worldX;
+        this.y = worldY;
     }
 }
